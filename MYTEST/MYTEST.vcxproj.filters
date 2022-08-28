@@ -13,24 +13,50 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="源文件\test_opencl">
-      <UniqueIdentifier>{51305875-b678-4076-8490-6851b4d3281f}</UniqueIdentifier>
+    <Filter Include="源文件\myUtils">
+      <UniqueIdentifier>{0aac03ad-3a65-46fe-bdce-9826bf560c19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\myCV">
+      <UniqueIdentifier>{cb5aeb1f-5df8-4228-8ca6-284e1a5ec30f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\myCL">
+      <UniqueIdentifier>{153a29cc-7717-45ff-a8e9-964c4c20822d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\projects">
+      <UniqueIdentifier>{6af1ac28-b79e-47a3-ade0-4f0d6fa39b58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\projects\opencl">
+      <UniqueIdentifier>{93201e10-3961-4351-b9a5-9983c813e20f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MYTEST.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\test_opencl\test_opencl.cpp">
-      <Filter>源文件\test_opencl</Filter>
+    <ClCompile Include="..\src\myCL\cl_wrapper.cpp">
+      <Filter>源文件\myCL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\projects\opencl\filters_cl.cpp">
+      <Filter>源文件\projects\opencl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\myUtils\myUtils.cpp">
+      <Filter>源文件\myUtils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\test_opencl\test_opencl.hpp">
-      <Filter>源文件\test_opencl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inc\test.h">
+    <ClInclude Include="..\src\MYTEST.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\myCL\cl_wrapper.h">
+      <Filter>源文件\myCL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\myUtils\myUtils.h">
+      <Filter>源文件\myUtils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\projects\opencl\filters.cl">
+      <Filter>源文件\projects\opencl</Filter>
+    </None>
   </ItemGroup>
 </Project>
