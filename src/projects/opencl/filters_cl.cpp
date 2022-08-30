@@ -16,11 +16,12 @@ void cl_boxFilter()
 	//! Create Platform, Device, Context, CommandQueue
 	CL_wrapper wrapper;
 
-	//! Show DeviceInfo
-
 	//! Build Program
 	std::string options = "-cl-std=CL1.2";
 	wrapper.build(clfilePath, options).makeKernel();
+
+	//! Show DeviceInfo
+	wrapper.checkPlatformDevice(true).checkImageCapacity(true).checkPerformanceInfo(true).checkKernelProperties(true);
 
 	//! Set Args
 	cl_channel_order channelOrder(CL_R);
@@ -47,15 +48,15 @@ void cl_boxFilter()
 	region[2] = 1;
 
 	kernel = wrapper.kernel("hello");
-	err = wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event);
+	CHECK_ERR_CL(wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event));
 
 	global = cl::NDRange(region[0], region[1]);
 	kernel = wrapper.kernel("boxFilter");
-	err = wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event);
+	CHECK_ERR_CL(wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event));
 	wrapper.timer("boxFilter");
 
-	err = wrapper.commandQueue().enqueueReadImage(clImgDst, CL_TRUE, origin, region, 0, 0, dstImg.data, NULL, &wrapper.event);
-	err = wrapper.commandQueue().finish();
+	CHECK_ERR_CL(wrapper.commandQueue().enqueueReadImage(clImgDst, CL_TRUE, origin, region, 0, 0, dstImg.data, NULL, &wrapper.event));
+	CHECK_ERR_CL(wrapper.commandQueue().finish());
 
 	return;
 }

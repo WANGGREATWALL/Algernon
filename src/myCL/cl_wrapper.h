@@ -6,9 +6,16 @@
 #include <CL/cl.hpp>
 #include <string>
 #include <vector>
+#include <array>
 #include <map>
+#include <set>
 
-using Map_kernel = std::map<std::string, cl::Kernel>;
+using map_kernel = std::map<std::string, cl::Kernel>;
+using vec_string = std::vector<std::string>;
+using set_string = std::set<std::string>;
+using vec_size_t = std::vector<size_t>;
+using vec_array3 = std::vector<cl::size_t<3> >;
+
 
 std::string clErrorCheck(cl_int err);
 
@@ -16,28 +23,39 @@ std::string clErrorCheck(cl_int err);
 #define CHECK_RET_CL(err) if (err != CL_SUCCESS) {printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__); return err;}
 
 struct PlatDevice_info {
-	std::string platformName;
-	std::string platformVendor;
-	std::string platformVersion;
+	vec_string		platformName;
+	vec_string		platformVendor;
+	vec_string		platformVersion;
 
-	std::string deviceName;
-	std::string deviceVendor;
-	std::string deviceVersion;
+	vec_string		deviceName;
+	vec_string		deviceVendor;
+	vec_string		deviceVersion;
 };
 
 struct Image_capacity {
-	size_t maxImage2DWidth;
-	size_t maxImage2DHeight;
+	size_t			maxImage2DWidth;
+	size_t			maxImage2DHeight;
+	size_t			maxReadImageArgs;
+	size_t			maxWriteImageArgs;
+	set_string		enableChannelOrders;
+
+	std::string order2string(int num);
 };
 
 struct Performance_info {
-	size_t maxWorkItemSize;
-	size_t computeUnitsNum;
-	std::vector<size_t> maxWorkItemSizes;
+	size_t			maxWorkItemDim;
+	size_t			maxWorkgroupSize;
+	size_t			maxComputeUnit;
+	vec_size_t		maxWorkitemSizes;
+	size_t			localMemSize;
 };
 
 struct Kernel_Properties {
-
+	vec_size_t		workgroupSizes;
+	vec_array3		compileWorkgroupSizes;
+	vec_size_t		privateMemSizes;
+	vec_size_t		localMemSizes;
+	vec_size_t		preferredWorkgroupSizeMultiple;
 };
 
 class CL_wrapper {
@@ -47,9 +65,14 @@ public:
 	CL_wrapper& build(std::string& filePath, std::string options = "");
 	CL_wrapper& makeKernel();
 
-	cl::Device& device() { return devices[0]; }
-	cl::Context& context() { return _context; }
-	cl::CommandQueue& commandQueue() { return _commandQueue; }
+	CL_wrapper& checkPlatformDevice(bool show);
+	CL_wrapper& checkImageCapacity(bool show);
+	CL_wrapper& checkPerformanceInfo(bool show);
+	CL_wrapper& checkKernelProperties(bool show);
+
+	cl::Device& device()				{ return devices[0]; }
+	cl::Context& context()				{ return _context; }
+	cl::CommandQueue& commandQueue()	{ return _commandQueue; }
 	cl::Kernel& kernel(std::string kernelName);
 
 	void timer(std::string taskName);
@@ -57,8 +80,6 @@ public:
 	cl::Event					event;
 
 private:
-	int32_t queryDeviceInfos();
-
 	//Todo:
 	bool tryReadProgramFromPath(std::string pathAndName, std::string checkString);
 
@@ -68,7 +89,7 @@ private:
 	cl::Context					_context;
 	cl::CommandQueue			_commandQueue;
 	cl::Program					program;
-	Map_kernel					kernels;
+	map_kernel					kernels;
 	cl_long						startTime;
 	cl_long						endTime;
 

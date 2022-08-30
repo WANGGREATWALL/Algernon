@@ -8,7 +8,5 @@
 /build/x64/Release/MYTEST.pdb
 *.suo
 /.vs/MYTEST/v16/*.db
-/.vs/MYTEST/v16/ipch/AutoPCH/19a40985fdfb933c/*.ipch
-/.vs/MYTEST/v16/ipch/AutoPCH/982e4a62c89f293/*.ipch
-/.vs/MYTEST/v16/ipch/AutoPCH/9d93994aac641591/*.ipch
-/MYTEST/x64/Release/vc142.pdb
+/MYTEST/x64/Release
+/.vs/MYTEST/v16/ipch/AutoPCH
