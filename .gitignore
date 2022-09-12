@@ -10,3 +10,6 @@
 /.vs/MYTEST/v16/*.db
 /MYTEST/x64/Release
 /.vs/MYTEST/v16/ipch/AutoPCH
+/.vs/MYTEST/v16/*.db-shm
+/.vs/MYTEST/v16/*.db-wal
+/.vs/MYTEST/v16/*.opendb
