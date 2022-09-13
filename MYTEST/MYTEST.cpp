@@ -2,5 +2,5 @@
 
 int main()
 {
-    test_OpenCL();
+    //test_OpenCL();
 }
