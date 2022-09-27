@@ -13,12 +13,16 @@ void cl_boxFilter()
 	cv::Mat dstImg(srcImg.rows, srcImg.cols, CV_8UC1);
 	CHECK_ERR(srcImg.empty(), "Fail to open %s", srcimgPath.c_str());
 
+	double sTime = timer();
 	//! Create Platform, Device, Context, CommandQueue
 	CL_wrapper wrapper;
+	printf("TIME of wrapper creation is %.2f ms\n", timer() - sTime);
 
+	sTime = timer();
 	//! Build Program
 	std::string options = "-cl-std=CL1.2";
 	wrapper.build(clfilePath, options).makeKernel();
+	printf("TIME of wrapper build is %.2f ms\n", timer() - sTime);
 
 	//! Show DeviceInfo
 	wrapper.checkPlatformDevice(true).checkImageCapacity(true).checkPerformanceInfo(true).checkKernelProperties(true);
@@ -53,7 +57,7 @@ void cl_boxFilter()
 	global = cl::NDRange(region[0], region[1]);
 	kernel = wrapper.kernel("boxFilter");
 	CHECK_ERR_CL(wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event));
-	wrapper.timer("boxFilter");
+	wrapper.printTaskTime("boxFilter");
 
 	CHECK_ERR_CL(wrapper.commandQueue().enqueueReadImage(clImgDst, CL_TRUE, origin, region, 0, 0, dstImg.data, NULL, &wrapper.event));
 	CHECK_ERR_CL(wrapper.commandQueue().finish());

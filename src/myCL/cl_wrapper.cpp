@@ -1,15 +1,23 @@
 #pragma once
 
 #include "cl_wrapper.h"
+#include "myUtils/myUtils.h"
 #include <iostream>
 #include <fstream>
 #include <memory>
 #include <iomanip>
+#include <functional>
 
 #define WIDTH_PD	20
 #define WIDTH_IM	20
 #define WIDTH_PF	20
 #define WIDTH_KN	20
+
+std::string getAlgoVersion()
+{
+	//algoName_v1.0.3
+	return "algoName_v1.0.3";
+}
 
 CL_wrapper::CL_wrapper(cl_context_properties* context_properties, cl_command_queue_properties queue_properties)
 {
@@ -36,32 +44,135 @@ CL_wrapper::CL_wrapper(cl_context_properties* context_properties, cl_command_que
 CL_wrapper& CL_wrapper::build(std::string& filePath, std::string options)
 {
 	int err = CL_SUCCESS;
+	bool isBinOK = false;
 
-	//if (!pathAndName.empty() &&	!checkString.empty()) {
-	//	tryReadProgramFromPath(pathAndName, checkString);
-	//}
+	//double sTime = timer();
 
-	std::fstream file(filePath, std::ios::binary | std::ios::in | std::ios::ate);
-	if (!file.is_open()) {
-		printf("[OpenCL Error]: Fail to open %s [%s:%s:%d]\n", filePath.c_str(), __FILE__, __FUNCTION__, __LINE__);
-		return *this;
-	}
+	std::string binPath = filePath;
+	std::string keyPath = filePath;
 
-	size_t fileSize = file.tellg();
-	file.seekg(0);
+	binPath.replace(filePath.rfind(".cl"), 3, ".bin");
+	keyPath.replace(filePath.rfind(".cl"), 3, ".key");
 
-	std::string kernelStr;
-	kernelStr.resize(fileSize);
+	std::string deviceName = devices[0].getInfo<CL_DEVICE_NAME>();
+	std::string deviceVendor = devices[0].getInfo<CL_DEVICE_VENDOR>();
+	std::string deviceVersion = devices[0].getInfo<CL_DEVICE_VERSION>();
 
-	file.read(&kernelStr[0], fileSize);
-	file.close();
+	std::string deviceInfo = deviceName + " " + deviceVendor + " " + deviceVersion + " " + getAlgoVersion();
+	std::string key_device = std::to_string(std::hash<std::string>{}(deviceInfo));
 
-	program = cl::Program(_context, kernelStr, &err);
-	if (err != CL_SUCCESS)
+	// Try to read bin file:
+	std::fstream file_bin(binPath, std::ios::binary | std::ios::in | std::ios::ate);
+	if (file_bin.is_open())
 	{
-		printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
-		return *this;
+		size_t fileSize = file_bin.tellg();
+		file_bin.seekg(0);
+
+		std::vector<char> programBin(fileSize);
+		cl::Program::Binaries kernelBin = { {programBin.data(), fileSize} };
+
+		file_bin.read(programBin.data(), fileSize);
+		file_bin.close();
+
+		program = cl::Program(_context, devices, kernelBin, NULL, &err);
+		if (err != CL_SUCCESS)
+		{
+			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			isBinOK = false;
+			goto REBUILD;
+		}
+
+		std::string programStr(programBin.cbegin(), programBin.cend());
+		std::string key_program = std::to_string(std::hash<std::string>{}(programStr));
+		std::string key = key_device + key_program;
+
+		// Check key file:
+		std::fstream file_key(keyPath, std::ios::binary | std::ios::in | std::ios::ate);
+		if (!file_key.is_open()) {
+			printf("[OpenCL Error]: Fail to open %s [%s:%s:%d]\n", keyPath.c_str(), __FILE__, __FUNCTION__, __LINE__);
+			isBinOK = false;
+			goto REBUILD;
+		}
+
+		fileSize = file_key.tellg();
+		file_key.seekg(0);
+
+		if (fileSize > 40)
+		{
+			printf("[OpenCL Error]: Invalid key value from %s [%s:%s:%d]\n", keyPath.c_str(), __FILE__, __FUNCTION__, __LINE__);
+			isBinOK = false;
+			goto REBUILD;
+		}
+
+		std::string keyCheck;
+		keyCheck.resize(fileSize);
+
+		file_key.read(&keyCheck[0], fileSize);
+		file_key.close();
+
+		if (key != keyCheck)
+		{
+			isBinOK = false;
+			goto REBUILD;
+		}
+		isBinOK = true;
 	}
+
+	REBUILD:
+	if (!isBinOK)
+	{
+		std::fstream file(filePath, std::ios::binary | std::ios::in | std::ios::ate);
+		if (!file.is_open()) {
+			printf("[OpenCL Error]: Fail to open %s [%s:%s:%d]\n", filePath.c_str(), __FILE__, __FUNCTION__, __LINE__);
+			return *this;
+		}
+
+		size_t fileSize = file.tellg();
+		file.seekg(0);
+
+		std::string kernelStr;
+		kernelStr.resize(fileSize);
+
+		file.read(&kernelStr[0], fileSize);
+		file.close();
+
+		program = cl::Program(_context, kernelStr, &err);
+		if (err != CL_SUCCESS)
+		{
+			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			return *this;
+		}
+
+		// Write bin & key:
+		auto programBin = program.getInfo<CL_PROGRAM_BINARIES>(&err);
+		if (err != CL_SUCCESS)
+		{
+			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			return *this;
+		}
+		auto programSize = program.getInfo<CL_PROGRAM_BINARY_SIZES>(&err);
+		if (err != CL_SUCCESS)
+		{
+			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			return *this;
+		}
+
+		std::string programStr(programBin[0], programSize[0]);
+		std::string key_program = std::to_string(std::hash<std::string>{}(programStr));
+		std::string key = key_device + key_program;
+
+		err = write_data_to_file(binPath, programBin[0], programSize[0]);
+		err |= write_data_to_file(keyPath, key.data(), key.size());
+		if (err != CL_SUCCESS)
+		{
+			printf("Failed to write file [%s:%s:%d]\n", __FILE__, __FUNCTION__, __LINE__);
+			return *this;
+		}
+	}
+
+	//printf("	TIME of program creation is %.2f ms\n", timer() - sTime);
+
+	//sTime = timer();
 
 	err = program.build(options.c_str());
 	if (err != CL_SUCCESS)
@@ -75,11 +186,14 @@ CL_wrapper& CL_wrapper::build(std::string& filePath, std::string options)
 		}
 	}
 
+	//printf("	TIME of program build is %.2f ms\n", timer() - sTime);
+
 	return *this;
 }
 
 CL_wrapper& CL_wrapper::makeKernel() 
 {
+	double sTime = timer();
 	std::vector<cl::Kernel> kernelVec;
 	int32_t err = program.createKernels(&kernelVec);
 	if (err != CL_SUCCESS)
@@ -294,78 +408,13 @@ CL_wrapper& CL_wrapper::checkKernelProperties(bool show)
 	return *this;
 }
 
-void CL_wrapper::timer(std::string taskName)
+void CL_wrapper::printTaskTime(std::string taskName)
 {
 	startTime = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
 	endTime	  = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
 
 	printf("Time of %s is %.2f ms\n", taskName.c_str(), (endTime - startTime) / 1000000.0f);
 }
-
-//int32_t queryDeviceInfos()
-//{
-//	int32_t err = CL_SUCCESS, error;
-//	deviceInfos.platformVendor = platforms[0].getInfo<CL_PLATFORM_VENDOR>(&error);
-//	err |= error;
-//	deviceInfos.platformName = platforms[0].getInfo<CL_PLATFORM_NAME>(&error);
-//	err |= error;
-//	deviceInfos.platformVersion = platforms[0].getInfo<CL_PLATFORM_VERSION>(&error);
-//	err |= error;
-//
-//	deviceInfos.deviceVendor = devices[0].getInfo<CL_DEVICE_VENDOR>(&error);
-//	err |= error;
-//	deviceInfos.deviceName = devices[0].getInfo<CL_DEVICE_NAME>(&error);
-//	err |= error;
-//	deviceInfos.deviceVersion = devices[0].getInfo<CL_DEVICE_VERSION>(&error);
-//	err |= error;
-//
-//	deviceInfos.computeUnitsNum = devices[0].getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>(&error);
-//	err |= error;
-//	std::vector<size_t> maxWorkItemSizes = devices[0].getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>(&error);
-//	err |= error;
-//
-//	deviceInfos.maxImage2DWidth = devices[0].getInfo<CL_DEVICE_IMAGE2D_MAX_WIDTH>(&error);
-//	err |= error;
-//	deviceInfos.maxImage2DHeight = devices[0].getInfo<CL_DEVICE_IMAGE2D_MAX_HEIGHT>(&error);
-//	err |= error;
-//
-//	if (err != CL_SUCCESS)
-//	{
-//		std::cerr << "Error " << err << " with queryDeviceInfos." << "\n";
-//	}
-//
-//	return err;
-//}
-
-/*
-bool tryReadProgramFromPath(std::string pathAndName, std::string checkString)
-{
-	std::string checkInfo = deviceInfos.platformName +
-		deviceInfos.platformVersion +
-		deviceInfos.deviceName +
-		deviceInfos.deviceVersion;
-
-	if (checkInfo != checkString) {
-		std::cerr << "Error" << " Binary program does not match, Need to recompile." << "\n";
-		return false;
-	}
-
-	std::fstream file(pathAndName, std::ios::binary | std::ios::in | std::ios::ate);
-	if (!file.is_open()) {
-		std::cerr << "Failed to open " << " Trying to compile from sources." << "\n";
-		return false;
-	}
-
-	size_t fileSize = file.tellg();
-	file.seekg(0);
-
-	char* buffer = (char*)malloc(fileSize);
-	file.read(buffer, fileSize);
-	file.close();
-
-	//TO DO
-}
-*/
 
 std::string clErrorCheck(cl_int err)
 {

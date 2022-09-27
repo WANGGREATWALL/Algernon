@@ -1,4 +1,5 @@
 #include "myUtils/myUtils.h"
+#include <fstream>
 
 #if defined(_WIN64) || defined(WIN32)
 #include <windows.h>
@@ -20,3 +21,18 @@ double timer()
 	return (tv.tv_sec * 1000.0 + tv.tv_usec / 1000.0); //ms
 }
 #endif
+
+int write_data_to_file(std::string filePath, const char* pDstData, size_t fileSize)
+{
+	std::fstream file(filePath, std::ios::binary | std::ios::out);
+	if (!file.is_open()) {
+		printf("[OpenCL Error]: Fail to open %s [%s:%s:%d]\n", filePath.c_str(), __FILE__, __FUNCTION__, __LINE__);
+		return -1;
+	}
+
+	file.seekg(0);
+
+	file.write(pDstData, fileSize);
+	file.close();
+	return 0;
+}

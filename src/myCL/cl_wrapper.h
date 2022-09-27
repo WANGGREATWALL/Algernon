@@ -18,6 +18,7 @@ using vec_array3 = std::vector<cl::size_t<3> >;
 
 
 std::string clErrorCheck(cl_int err);
+std::string getAlgoVersion();
 
 #define CHECK_ERR_CL(err) if (err != CL_SUCCESS) {printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__); return;}
 #define CHECK_RET_CL(err) if (err != CL_SUCCESS) {printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__); return err;}
@@ -75,14 +76,11 @@ public:
 	cl::CommandQueue& commandQueue()	{ return _commandQueue; }
 	cl::Kernel& kernel(std::string kernelName);
 
-	void timer(std::string taskName);
+	void printTaskTime(std::string taskName);
 
 	cl::Event					event;
 
 private:
-	//Todo:
-	bool tryReadProgramFromPath(std::string pathAndName, std::string checkString);
-
 	//Basic:
 	std::vector<cl::Platform>	platforms;
 	std::vector<cl::Device>		devices;
