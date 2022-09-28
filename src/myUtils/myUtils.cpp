@@ -22,7 +22,29 @@ double timer()
 }
 #endif
 
-int write_data_to_file(std::string filePath, const char* pDstData, size_t fileSize)
+std::string read_data_from_file(std::string filePath, size_t fileSize)
+{
+	std::string data;
+	std::fstream file(filePath, std::ios::binary | std::ios::in | std::ios::ate);
+	if (!file.is_open()) {
+		printf("Fail to open %s [%s:%s:%d]\n", filePath.c_str(), __FILE__, __FUNCTION__, __LINE__);
+		return data;
+	}
+
+	if (fileSize == 0)
+	{
+		fileSize = file.tellg();
+	}
+	file.seekg(0);
+	data.resize(fileSize);
+
+	file.read(&data[0], fileSize);
+	file.close();
+
+	return data;
+}
+
+int write_data_to_file(std::string filePath, const char* pData, size_t fileSize)
 {
 	std::fstream file(filePath, std::ios::binary | std::ios::out);
 	if (!file.is_open()) {
@@ -32,7 +54,7 @@ int write_data_to_file(std::string filePath, const char* pDstData, size_t fileSi
 
 	file.seekg(0);
 
-	file.write(pDstData, fileSize);
+	file.write(pData, fileSize);
 	file.close();
 	return 0;
 }

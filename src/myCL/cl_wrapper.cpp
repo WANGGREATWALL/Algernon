@@ -51,118 +51,94 @@ CL_wrapper& CL_wrapper::build(std::string& filePath, std::string options)
 	std::string binPath = filePath;
 	std::string keyPath = filePath;
 
-	binPath.replace(filePath.rfind(".cl"), 3, ".bin");
-	keyPath.replace(filePath.rfind(".cl"), 3, ".key");
+	binPath.replace(binPath.rfind(".cl"), 3, ".bin");
+	keyPath.replace(keyPath.rfind(".cl"), 3, ".key");
 
-	std::string deviceName = devices[0].getInfo<CL_DEVICE_NAME>();
-	std::string deviceVendor = devices[0].getInfo<CL_DEVICE_VENDOR>();
-	std::string deviceVersion = devices[0].getInfo<CL_DEVICE_VERSION>();
+	std::string deviceName = devices[0].getInfo<CL_DEVICE_NAME>() + " ";
+	std::string deviceVendor = devices[0].getInfo<CL_DEVICE_VENDOR>() + " ";
+	std::string deviceVersion = devices[0].getInfo<CL_DEVICE_VERSION>() + " ";
 
-	std::string deviceInfo = deviceName + " " + deviceVendor + " " + deviceVersion + " " + getAlgoVersion();
-	std::string key_device = std::to_string(std::hash<std::string>{}(deviceInfo));
+	std::string deviceInfo = deviceName + deviceVendor + deviceVersion + getAlgoVersion();
+	std::string key0 = std::to_string(std::hash<std::string>{}(deviceInfo));
+	key0.resize(20, 'X');
 
 	// Try to read bin file:
-	std::fstream file_bin(binPath, std::ios::binary | std::ios::in | std::ios::ate);
-	if (file_bin.is_open())
+	std::string key_check = read_data_from_file(keyPath);
+	if (key_check.size() == 60)
 	{
-		size_t fileSize = file_bin.tellg();
-		file_bin.seekg(0);
-
-		std::vector<char> programBin(fileSize);
-		cl::Program::Binaries kernelBin = { {programBin.data(), fileSize} };
-
-		file_bin.read(programBin.data(), fileSize);
-		file_bin.close();
-
-		program = cl::Program(_context, devices, kernelBin, NULL, &err);
-		if (err != CL_SUCCESS)
+		std::string key0_check(key_check.cbegin(), key_check.cbegin() + 20);		// for device & version
+		std::string key1_check(key_check.cbegin() + 20, key_check.cbegin() + 40);	// for cl file
+		std::string key2_check(key_check.cbegin() + 40, key_check.cbegin() + 60);	// for bin file
+		if (key0 == key0_check)
 		{
-			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
-			isBinOK = false;
-			goto REBUILD;
+			std::string kernelStr = read_data_from_file(filePath);
+			if (kernelStr.size() > 0)
+			{
+				std::string key1 = std::to_string(std::hash<std::string>{}(kernelStr));
+				key1.resize(20, 'X');
+				if (key1 == key1_check)
+				{
+					std::string binStr = read_data_from_file(binPath);
+					if (binStr.size() > 0)
+					{
+						std::string key2 = std::to_string(std::hash<std::string>{}(binStr));
+						key2.resize(20, 'X');
+						if (key2 == key2_check)
+						{
+							cl::Program::Binaries bin = { {binStr.data(), binStr.size()} };
+							program = cl::Program(_context, devices, bin, NULL, &err);
+							if (err == CL_SUCCESS)
+							{
+								isBinOK = true;
+							}
+						}
+					}
+				}
+			}
 		}
-
-		std::string programStr(programBin.cbegin(), programBin.cend());
-		std::string key_program = std::to_string(std::hash<std::string>{}(programStr));
-		std::string key = key_device + key_program;
-
-		// Check key file:
-		std::fstream file_key(keyPath, std::ios::binary | std::ios::in | std::ios::ate);
-		if (!file_key.is_open()) {
-			printf("[OpenCL Error]: Fail to open %s [%s:%s:%d]\n", keyPath.c_str(), __FILE__, __FUNCTION__, __LINE__);
-			isBinOK = false;
-			goto REBUILD;
-		}
-
-		fileSize = file_key.tellg();
-		file_key.seekg(0);
-
-		if (fileSize > 40)
-		{
-			printf("[OpenCL Error]: Invalid key value from %s [%s:%s:%d]\n", keyPath.c_str(), __FILE__, __FUNCTION__, __LINE__);
-			isBinOK = false;
-			goto REBUILD;
-		}
-
-		std::string keyCheck;
-		keyCheck.resize(fileSize);
-
-		file_key.read(&keyCheck[0], fileSize);
-		file_key.close();
-
-		if (key != keyCheck)
-		{
-			isBinOK = false;
-			goto REBUILD;
-		}
-		isBinOK = true;
 	}
 
-	REBUILD:
 	if (!isBinOK)
 	{
-		std::fstream file(filePath, std::ios::binary | std::ios::in | std::ios::ate);
-		if (!file.is_open()) {
+		std::string str = read_data_from_file(filePath);
+		if (str.size() == 0)
+		{
 			printf("[OpenCL Error]: Fail to open %s [%s:%s:%d]\n", filePath.c_str(), __FILE__, __FUNCTION__, __LINE__);
 			return *this;
 		}
 
-		size_t fileSize = file.tellg();
-		file.seekg(0);
-
-		std::string kernelStr;
-		kernelStr.resize(fileSize);
-
-		file.read(&kernelStr[0], fileSize);
-		file.close();
-
-		program = cl::Program(_context, kernelStr, &err);
+		program = cl::Program(_context, str, &err);
 		if (err != CL_SUCCESS)
 		{
 			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
 			return *this;
 		}
 
-		// Write bin & key:
-		auto programBin = program.getInfo<CL_PROGRAM_BINARIES>(&err);
+		// Write Bin & Key:
+		auto bins = program.getInfo<CL_PROGRAM_BINARIES>(&err);
 		if (err != CL_SUCCESS)
 		{
 			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
 			return *this;
 		}
-		auto programSize = program.getInfo<CL_PROGRAM_BINARY_SIZES>(&err);
+		auto binSizes = program.getInfo<CL_PROGRAM_BINARY_SIZES>(&err);
 		if (err != CL_SUCCESS)
 		{
 			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
 			return *this;
 		}
 
-		std::string programStr(programBin[0], programSize[0]);
-		std::string key_program = std::to_string(std::hash<std::string>{}(programStr));
-		std::string key = key_device + key_program;
+		std::string bin(bins[0], binSizes[0]);
 
-		err = write_data_to_file(binPath, programBin[0], programSize[0]);
-		err |= write_data_to_file(keyPath, key.data(), key.size());
+		std::string key1 = std::to_string(std::hash<std::string>{}(str));
+		std::string key2 = std::to_string(std::hash<std::string>{}(bin));
+
+		key1.resize(20, 'X');
+		key2.resize(20, 'X');
+		std::string key = key0 + key1 + key2;
+
+		err = write_data_to_file(keyPath, key.data(), key.size());
+		err |= write_data_to_file(binPath, bin.data(), bin.size());
 		if (err != CL_SUCCESS)
 		{
 			printf("Failed to write file [%s:%s:%d]\n", __FILE__, __FUNCTION__, __LINE__);
