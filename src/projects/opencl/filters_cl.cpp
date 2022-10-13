@@ -37,14 +37,16 @@ void cl_boxFilter()
 	cl::Image2D clImgDst(wrapper.context(), CL_MEM_WRITE_ONLY, imageFormat, srcImg.cols, srcImg.rows, 0, NULL, &err);
 	CHECK_ERR_CL(err);
 
+	int radius = 5;
 	cl::Kernel kernel = wrapper.kernel("boxFilter");
 	CHECK_ERR_CL(kernel.setArg(0, clImgSrc));
 	CHECK_ERR_CL(kernel.setArg(1, clImgDst));
+	CHECK_ERR_CL(kernel.setArg(2, radius));
 
 	//! Enqueue Command
 	cl::NDRange offset(0, 0);
-	cl::NDRange global(2, 2);
-	cl::NDRange local(1, 1);
+	cl::NDRange global(srcImg.cols, srcImg.rows);
+	cl::NDRange local(16, 16);
 	cl::size_t<3> origin;
 	cl::size_t<3> region; 
 	region[0] = srcImg.cols;
@@ -54,12 +56,16 @@ void cl_boxFilter()
 	kernel = wrapper.kernel("hello");
 	CHECK_ERR_CL(wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event));
 
+	cl::Event event;
+
 	global = cl::NDRange(region[0], region[1]);
 	kernel = wrapper.kernel("boxFilter");
 	CHECK_ERR_CL(wrapper.commandQueue().enqueueNDRangeKernel(kernel, offset, global, local, NULL, &wrapper.event));
 	wrapper.printTaskTime("boxFilter");
 
-	CHECK_ERR_CL(wrapper.commandQueue().enqueueReadImage(clImgDst, CL_TRUE, origin, region, 0, 0, dstImg.data, NULL, &wrapper.event));
+	CLImgViewer hello(wrapper.commandQueue(), clImgDst);
+
+	//CHECK_ERR_CL(wrapper.commandQueue().enqueueReadImage(clImgDst, CL_TRUE, origin, region, 0, 0, dstImg.data, NULL, &event));
 	CHECK_ERR_CL(wrapper.commandQueue().finish());
 
 	return;

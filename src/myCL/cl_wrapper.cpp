@@ -386,8 +386,10 @@ CL_wrapper& CL_wrapper::checkKernelProperties(bool show)
 
 void CL_wrapper::printTaskTime(std::string taskName)
 {
-	startTime = event.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-	endTime	  = event.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+	int err = 0;
+	startTime = event.getProfilingInfo<CL_PROFILING_COMMAND_START>(&err);
+	endTime	  = event.getProfilingInfo<CL_PROFILING_COMMAND_END>(&err);
+	CHECK_ERR_CL(err);
 
 	printf("Time of %s is %.2f ms\n", taskName.c_str(), (endTime - startTime) / 1000000.0f);
 }

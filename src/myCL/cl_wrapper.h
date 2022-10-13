@@ -98,3 +98,57 @@ private:
 	Kernel_Properties			KN_info;
 };
 
+#define UINT8		0
+#define INT8		1
+#define UINT16		2
+#define INT16		3
+#define INT32		4
+#define FLOAT32		5
+
+class CLImgViewer {
+public:
+	CLImgViewer() = default;
+	CLImgViewer(cl::CommandQueue &commandQueue, cl::Image2D& cl_image2d) : commandQ(commandQueue), image(cl_image2d)
+	{
+		int err = 0;
+		cols = cl_image2d.getImageInfo<CL_IMAGE_WIDTH>(&err);
+		rows = cl_image2d.getImageInfo<CL_IMAGE_HEIGHT>(&err);
+		step = cl_image2d.getImageInfo<CL_IMAGE_ROW_PITCH>(&err);
+		CHECK_ERR_CL(err);
+
+		cl::size_t<3> origin;
+		cl::size_t<3> region;
+		region[0] = cols;
+		region[1] = rows;
+		region[2] = 1;
+
+		size_t row_pitch, slice_pitch;
+		data = (uint8_t*)commandQ.enqueueMapImage(cl_image2d, true,
+			CL_MAP_READ, origin, region,
+			&row_pitch, &slice_pitch, NULL, NULL, &err);
+		CHECK_ERR_CL(err);
+	}
+	~CLImgViewer() 
+	{ 
+		commandQ.enqueueUnmapMemObject(image, data, NULL, NULL);
+	}
+	/** type:
+	*	UINT8:		0;
+	*	INT8:		1;
+	*	UINT16:		2;
+	*	INT16:		3;
+	*	INT32:		4;
+	*	FLOAT32:	5;
+	*/
+	int type		= UINT8;
+	int rows		= 0;
+	int cols		= 0;
+	int step		= 0;
+	int layer		= 1;
+	int channel		= 1;
+	uint8_t* data	= nullptr;
+
+private:
+	cl::CommandQueue	commandQ;
+	cl::Image2D			image;
+};
