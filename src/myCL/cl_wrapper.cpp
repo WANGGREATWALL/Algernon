@@ -114,6 +114,21 @@ CL_wrapper& CL_wrapper::build(std::string& filePath, std::string options)
 			return *this;
 		}
 
+		//options = "-cl-std=CL2.0"
+		err = program.build(options.c_str());
+		if (err != CL_SUCCESS)
+		{
+			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			std::string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0], &err);
+			if (err != CL_SUCCESS) {
+				printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			}
+			else {
+				printf("CL Program Build Log: %s\n", log.c_str());
+			}
+			return *this;
+		}
+
 		// Write Bin & Key:
 		auto bins = program.getInfo<CL_PROGRAM_BINARIES>(&err);
 		if (err != CL_SUCCESS)
@@ -145,24 +160,20 @@ CL_wrapper& CL_wrapper::build(std::string& filePath, std::string options)
 			return *this;
 		}
 	}
-
-	//printf("	TIME of program creation is %.2f ms\n", timer() - sTime);
-
-	//sTime = timer();
-
-	err = program.build(options.c_str());
-	if (err != CL_SUCCESS)
-	{
-		printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
-		std::string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0], &err);
-		if (err != CL_SUCCESS) {
+	else {
+		err = program.build(options.c_str());
+		if (err != CL_SUCCESS)
+		{
 			printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
-		} else {
-			printf("CL Program Build Log: %s\n", log.c_str());
+			std::string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0], &err);
+			if (err != CL_SUCCESS) {
+				printf("%s [%s:%s:%d]\n", clErrorCheck(err).c_str(), __FILE__, __FUNCTION__, __LINE__);
+			}
+			else {
+				printf("CL Program Build Log: %s\n", log.c_str());
+			}
 		}
 	}
-
-	//printf("	TIME of program build is %.2f ms\n", timer() - sTime);
 
 	return *this;
 }
