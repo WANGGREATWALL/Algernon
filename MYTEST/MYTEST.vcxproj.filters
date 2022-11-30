@@ -45,6 +45,9 @@
     <ClCompile Include="..\src\myCV\myCV.cpp">
       <Filter>源文件\myCV</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\myUtils\logger.cpp">
+      <Filter>源文件\myUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\MYTEST.h">
@@ -58,6 +61,9 @@
     </ClInclude>
     <ClInclude Include="..\src\myCV\myCV.h">
       <Filter>源文件\myCV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\myUtils\logger.h">
+      <Filter>源文件\myUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
