@@ -28,6 +28,9 @@
     <Filter Include="源文件\projects\opencl">
       <UniqueIdentifier>{93201e10-3961-4351-b9a5-9983c813e20f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\projects\opengl">
+      <UniqueIdentifier>{1b63dec6-768f-40c2-bb67-aa5ebdd16eb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MYTEST.cpp">
@@ -47,6 +50,12 @@
     </ClCompile>
     <ClCompile Include="..\src\myUtils\logger.cpp">
       <Filter>源文件\myUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\projects\opengl\test_gl.cpp">
+      <Filter>源文件\projects\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\projects\opengl\glad.c">
+      <Filter>源文件\projects\opengl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

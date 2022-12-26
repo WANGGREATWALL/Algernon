@@ -1,21 +1,17 @@
 #pragma once
-
 #include <string>
-#include <fstream>
 
-namespace caddy {
+#define LOG_DEBUG(format, ...)  caddie::logger::Logger::get().log(caddie::logger::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...)   caddie::logger::Logger::get().log(caddie::logger::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_WARN(format, ...)   caddie::logger::Logger::get().log(caddie::logger::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...)  caddie::logger::Logger::get().log(caddie::logger::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_FATAL(format, ...)  caddie::logger::Logger::get().log(caddie::logger::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define LOG_LEVEL(level)        caddie::logger::Logger::get().setlevel(level);
 
-    using namespace std;
+namespace caddie {
 
-#define debug(format, ...)  Logger::instance()->log(Logger::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define info(format, ...)   Logger::instance()->log(Logger::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define warn(format, ...)   Logger::instance()->log(Logger::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define error(format, ...)  Logger::instance()->log(Logger::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define fatal(format, ...)  Logger::instance()->log(Logger::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+    namespace logger {
 
-    class Logger
-    {
-    public:
         enum Level
         {
             DEBUG       = 0,
@@ -26,25 +22,21 @@ namespace caddy {
             LEVEL_COUNT = 5
         };
 
-        static Logger* instance();
-        void open(const string& filename);
-        void close();
-        void log(Level level, const char* file, int line, const char* format, ...);
-        void max(int bytes);
-        void level(int level);
+        class Logger
+        {
+        public:
+            static Logger& get();
+            void log(Level level, const char* file, int line, const char* format, ...);
+            void setlevel(int level);
 
-    private:
-        Logger();
-        ~Logger();
-        void rotate();
+        private:
+            Logger();
+            ~Logger();
 
-    private:
-        string m_filename;
-        ofstream m_fout;
-        int m_max;
-        int m_len;
-        int m_level;
-        static const char* s_level[LEVEL_COUNT];
-        static Logger* m_instance;
-    };
+        private:
+            int _level;
+            static const char* levels[LEVEL_COUNT];
+        };
+    } //namespace logger
+
 }
