@@ -31,6 +31,9 @@
     <Filter Include="源文件\projects\opengl">
       <UniqueIdentifier>{1b63dec6-768f-40c2-bb67-aa5ebdd16eb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\myGL">
+      <UniqueIdentifier>{f7a0cb05-889d-4212-9d41-3203e85dac37}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MYTEST.cpp">
@@ -73,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="..\src\myUtils\logger.h">
       <Filter>源文件\myUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\myGL\shader.hpp">
+      <Filter>源文件\myGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
