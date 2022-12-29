@@ -77,7 +77,10 @@
     <ClInclude Include="..\src\myUtils\logger.h">
       <Filter>源文件\myUtils</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\myGL\shader.hpp">
+    <ClInclude Include="..\src\myGL\shader.h">
+      <Filter>源文件\myGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\myGL\stb_image.h">
       <Filter>源文件\myGL</Filter>
     </ClInclude>
   </ItemGroup>
