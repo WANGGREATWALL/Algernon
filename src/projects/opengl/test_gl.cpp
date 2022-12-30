@@ -6,12 +6,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <myGL/stb_image.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 1200;
 
 void test_OpenGL()
 {
@@ -166,9 +170,26 @@ void test_OpenGL()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+        // create transformations
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::scale(transform, glm::vec3(0.75f, 1.0f, 1.0f));
+        transform = glm::rotate(transform, (float)glfwGetTime() * 2, glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+        transform = glm::rotate(transform, (float)glfwGetTime() * (-5), glm::vec3(0.0f, 0.0f, 1.0f));
+        
         // render container
         ourShader.use();
+        unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
         glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        transform = glm::mat4(1.0f);
+        transform = glm::scale(transform, glm::vec3(0.375f, 0.5f, 1.0f));
+        transform = glm::rotate(transform, (float)glfwGetTime() * (-5), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
