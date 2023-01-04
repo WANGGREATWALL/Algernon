@@ -83,6 +83,9 @@
     <ClInclude Include="..\src\myGL\stb_image.h">
       <Filter>源文件\myGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\myGL\camera.h">
+      <Filter>源文件\myGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\projects\opencl\filters.cl">

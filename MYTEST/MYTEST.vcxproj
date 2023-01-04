@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="..\src\myCL\cl_wrapper.h" />
     <ClInclude Include="..\src\myCV\myCV.h" />
+    <ClInclude Include="..\src\myGL\camera.h" />
     <ClInclude Include="..\src\myGL\shader.h" />
     <ClInclude Include="..\src\myGL\stb_image.h" />
     <ClInclude Include="..\src\MYTEST.h" />
