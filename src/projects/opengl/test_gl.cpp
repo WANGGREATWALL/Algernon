@@ -183,7 +183,7 @@ void test_lighting()
     // load textures (we now use a utility function to keep the code more organized)
     // -----------------------------------------------------------------------------
     unsigned int diffuseMap = loadTexture("../image/container2.png");
-    unsigned int specularMap = loadTexture("../image/container2_specular.png");
+    unsigned int specularMap = loadTexture("../image/container3_specular.png");
     unsigned int emissionMap = loadTexture("../image/container3_specular.png");
 
     // shader configuration
