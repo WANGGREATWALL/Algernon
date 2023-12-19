@@ -9,4 +9,6 @@ int main()
 
     //test_OpenCL();
     test_OpenGL();
+
+    return EXIT_SUCCESS;
 }
