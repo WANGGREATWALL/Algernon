@@ -1,15 +1,1 @@
-*.log
-*.obj
-*.tlog
-*.recipe
-*.iobj
-*.ipdb
-/build/x64/Release/MYTEST.exe
-/build/x64/Release/MYTEST.pdb
-*.suo
-/.vs/MYTEST/v16/*.db
-/MYTEST/x64/Release
-/.vs/MYTEST/v16/ipch/AutoPCH
-/.vs/MYTEST/v16/*.db-shm
-/.vs/MYTEST/v16/*.db-wal
-/.vs/MYTEST/v16/*.opendb
+/build
