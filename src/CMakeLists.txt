@@ -8,6 +8,7 @@ target_include_directories(test PRIVATE
     ./memory
     ./regex
     ./file
+    ./threadpool
 )
 
 aux_source_directory(. sources)
@@ -15,5 +16,6 @@ aux_source_directory(./file sources)
 aux_source_directory(./log sources)
 aux_source_directory(./memory sources)
 aux_source_directory(./regex sources)
+aux_source_directory(./threadpool sources)
 
 target_sources(test PUBLIC ${sources})

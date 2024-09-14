@@ -85,7 +85,8 @@ enum ErrorCode {
     ECODE_INVALID_PARAM = 2,
     ECODE_OUT_OF_RANGE = 3,
     ECODE_FILE_NOT_EXIST = 4,
-    ECODE_UNSUPPORTED = 5
+    ECODE_UNSUPPORTED = 5,
+    ECODE_NO_MEMORY = 6
 };
 
 #endif // _LOGGER_H_
