@@ -23,3 +23,5 @@ aux_source_directory(./json sources)
 aux_source_directory(./perf sources)
 
 target_sources(test PUBLIC ${sources})
+
+file(COPY ${CMAKE_SOURCE_DIR}/src/main.json DESTINATION ${CMAKE_BINARY_DIR}/src)
