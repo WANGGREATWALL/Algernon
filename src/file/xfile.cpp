@@ -72,8 +72,6 @@ namespace file {
         mSize = f.tellg();
         mData = memory::XBuffer<char>(mSize);
 
-        LOGGER_E("mSize = %lu\n", mSize);
-
         f.seekg(0);
         f.read(mData.get(), mSize);
         f.close();

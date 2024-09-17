@@ -5,10 +5,14 @@ volatile int G_LEVEL_LOGGER = LEVEL_LOGGER_DEFAULT;
 #include "xbuffer.h"
 #include "xfile.h"
 #include "xthread_flow.h"
+#include "performance.h"
 
 
 int main()
 {
+    perf::setTimerRootName("Algernon");
+    perf::TracerScoped trace("main");
+
     file::XFile f("cmake_install.cmake");
     auto fbuffer = f.getBuffer();
     LOGGER_I("buffer.size = %lu\n", fbuffer.sizeByByte());
