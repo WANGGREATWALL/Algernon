@@ -136,8 +136,12 @@ namespace json {
     {
         ASSERTER_WITH_RET(file::exists(filename), ECODE_FILE_NOT_EXIST);
 
-        file::XFile f(filename);
-        mJsonRoot = cJSON_Parse(f.getBuffer().get());
+        memory::XBuffer<char> buffer;
+
+        int retLoadBuffer = file::XFile::loadFileToBuffer(filename, buffer);
+        ASSERTER_WITH_RET(retLoadBuffer == ECODE_SUCCESS, retLoadBuffer);
+
+        mJsonRoot = cJSON_Parse(buffer.get());
         ASSERTER_WITH_INFO(mJsonRoot != nullptr, ECODE_BAD_STATE, "json error before charactor: '%s'", cJSON_GetErrorPtr());
 
         mNeedDelete = true;

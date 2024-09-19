@@ -52,37 +52,47 @@ namespace file {
     }
 
 
-    XFile::XFile(const std::string filename)
-    {
-        ASSERTER(exists(filename));
-        ASSERTER(reopen(filename) == ECODE_SUCCESS);
-    }
-
-    memory::XBuffer<char> XFile::getBuffer() const
-    {
-        return mData;
-    }
-
-    int XFile::reopen(const std::string filename)
+    int XFile::loadFileToBuffer(const std::string& filename, memory::XBuffer<char>& buffer)
     {
         ASSERTER_WITH_RET(exists(filename), ECODE_FILE_NOT_EXIST);
+
         std::ifstream f(filename, std::ios::binary);
 
         f.seekg(0, std::ios::end);
-        mSize = f.tellg();
-        mData = memory::XBuffer<char>(mSize);
+        auto size = f.tellg();
+        buffer = memory::XBuffer<char>(size);
 
         f.seekg(0);
-        f.read(mData.get(), mSize);
+        f.read(buffer.get(), size);
         f.close();
 
         return ECODE_SUCCESS;
     }
 
-    void XFile::clear()
+    int XFile::saveBufferToFile(const memory::XBuffer<char>& buffer, const std::string& filename)
     {
-        mData.clear();
-        mSize = 0;
+        ASSERTER_WITH_RET(buffer.sizeByByte() > 0, ECODE_INVALID_PARAM);
+
+        std::ofstream file(filename, std::fstream::out | std::fstream::binary);
+        ASSERTER_WITH_RET(file.is_open(), ECODE_BAD_STATE);
+
+        file.write(buffer.get(), buffer.sizeByByte());
+        file.close();
+
+        return ECODE_SUCCESS;
+    }
+
+    int XFile::saveBufferToFile(const std::string& content, const std::string& filename)
+    {
+        ASSERTER_WITH_RET(!content.empty(), ECODE_INVALID_PARAM);
+
+        std::ofstream file(filename, std::fstream::out | std::fstream::binary);
+        ASSERTER_WITH_RET(file.is_open(), ECODE_BAD_STATE);
+
+        file.write(content.data(), content.size());
+        file.close();
+
+        return ECODE_SUCCESS;
     }
 
 

@@ -47,9 +47,10 @@ int main()
     bool exist = file::exists(jsonfile);
     LOGGER_I("exist = %s\n", exist ? "true" : "false");
 
-    file::XFile f(jsonfile);
-    auto fbuffer = f.getBuffer();
-    LOGGER_I("buffer.size = %lu\n", fbuffer.sizeByByte());
+    memory::XBuffer<char> buffer;
+    int retLoadJsonFile = file::XFile::loadFileToBuffer(jsonfile, buffer);
+    ASSERTER_WITH_RET(retLoadJsonFile == ECODE_SUCCESS, retLoadJsonFile);
+    LOGGER_I("buffer.size = %lu\n", buffer.sizeByByte());
 
     trace.sub("add pipeline");
     auto pipeline = framework::Flow::get().addPipeline(

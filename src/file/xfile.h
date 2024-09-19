@@ -17,21 +17,9 @@ namespace file {
 
     class XFile {
     public:
-        XFile() = default;
-        XFile(const std::string filename);
-        ~XFile() = default;
-
-        XFile(const XFile& f) = delete;
-        XFile& operator=(const XFile& f) = delete;
-
-        memory::XBuffer<char> getBuffer() const;
-
-        int reopen(const std::string filename);
-        void clear();
-    
-    private:
-        memory::XBuffer<char>   mData;
-        size_t                  mSize; // in Byte
+        static int loadFileToBuffer(const std::string& filename, memory::XBuffer<char>& buffer);
+        static int saveBufferToFile(const memory::XBuffer<char>& buffer, const std::string& filename);
+        static int saveBufferToFile(const std::string& content, const std::string& filename);
     };
 
 
