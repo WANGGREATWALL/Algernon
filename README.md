@@ -9,7 +9,23 @@
 ## 2 todo
 - [ ] caddies
     - [ ] cv
+        - [ ] ximage
+    - [ ] file
+        - [ ] xfile
+    - [ ] json
+        - [ ] xjson
+    - [ ] log
+        - [ ] logger
+    - [ ] memory
+        - [ ] xbuffer
+    - [ ] perf
+        - [ ] timer
+        - [ ] performance
     - [x] regex
+        - [x] xregex
+    - [ ] threadpool
+        - [ ] xthreadpool
     - [x] util
+        - [x] argument_parser
 - [ ] gpu_helper
 - [x] gtest 
