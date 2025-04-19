@@ -1,43 +1,39 @@
-#include "xregex.h"
-#include "logger.h"
+#include "regex/xregex.h"
+#include "log/logger.h"
 
-XRegex::XRegex(std::string regex)
+
+namespace re
 {
-    mRegex = regex;
+
+
+bool matchRegexInString(const std::string& content, const std::string& regex)
+{
+    std::regex pattern{regex};
+    return std::regex_search(content, pattern);
 }
 
-void XRegex::reset(std::string regex)
+std::string getFirstMatchInString(const std::string& content, const std::string& regex)
 {
-    mRegex = regex;
-}
-
-bool XRegex::matchable(std::string input)
-{
-    std::smatch result;
-    return std::regex_search(input, result, mRegex);
-}
-
-std::string XRegex::findFirstOneIn(std::string input)
-{
-    std::vector<std::string> strings = findAllIn(input);
+    std::vector<std::string> strings = getAllMatchesInString(content, regex);
     if (strings.empty()) {
         return std::string();
     }
     return strings.front();
 }
 
-std::string XRegex::findLastOneIn(std::string input)
+std::string getLastMatchInString(const std::string& content, const std::string& regex)
 {
-    std::vector<std::string> strings = findAllIn(input);
+    std::vector<std::string> strings = getAllMatchesInString(content, regex);
     if (strings.empty()) {
         return std::string();
     }
     return strings.back();
 }
 
-std::vector<std::string> XRegex::findAllIn(std::string input)
+std::vector<std::string> getAllMatchesInString(const std::string& content, const std::string& regex)
 {
-    std::sregex_iterator it(input.begin(), input.end(), mRegex);
+    std::regex pattern{regex};
+    std::sregex_iterator it(content.begin(), content.end(), pattern);
     std::sregex_iterator end;
 
     std::vector<std::string> strings;
@@ -46,3 +42,34 @@ std::vector<std::string> XRegex::findAllIn(std::string input)
     }
     return strings;
 }
+
+std::string replaceAllMatchesInString(const std::string& content, const std::string& regex, const std::string& replacement)
+{
+    std::regex pattern{regex};
+    return std::regex_replace(content, pattern, replacement);
+}
+
+std::string replaceSpecificMatchInString(const std::string& content, const std::string& regex, const std::string& replacement, int idx)
+{
+    std::string result = content;
+
+    std::regex pattern{regex};
+    std::sregex_iterator it(content.begin(), content.end(), pattern);
+    std::sregex_iterator end;
+
+    size_t idxCurrent = 0;
+
+    for (; it != end; ++it) {
+        if (idxCurrent == idx) {
+            auto match = *it;
+            result.replace(match.position(), match.length(), replacement);
+            break;
+        }
+        ++idxCurrent;
+    }
+
+    return result;
+}
+
+
+} // namespace re

@@ -4,25 +4,44 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_executable(test)
 
 target_include_directories(test PRIVATE
-    ./caddies
-    ./caddies/log
-    ./caddies/memory
-    ./caddies/regex
-    ./caddies/file
-    ./caddies/threadpool
-    ./caddies/json
-    ./caddies/perf
-    ./caddies/ext
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/cv
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/ext
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/file
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/json
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/log
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/memory
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/perf
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/regex
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/threadpool
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/util
+    ${CMAKE_CURRENT_SOURCE_DIR}/gtest
+    ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src
 )
 
-aux_source_directory(. sources)
-aux_source_directory(./caddies/file sources)
-aux_source_directory(./caddies/log sources)
-aux_source_directory(./caddies/memory sources)
-aux_source_directory(./caddies/regex sources)
-aux_source_directory(./caddies/threadpool sources)
-aux_source_directory(./caddies/json sources)
-aux_source_directory(./caddies/perf sources)
-aux_source_directory(./caddies/ext sources)
+file(GLOB_RECURSE sources 
+    # ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/**/*.c 
+    ${CMAKE_CURRENT_SOURCE_DIR}/caddies/**/*.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/*.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/run/*.cpp
+)
 
-target_sources(test PUBLIC ${sources})
+target_sources(test PRIVATE ${sources})
+
+# version
+# 检查版本变量是否定义
+if(NOT DEFINED ALGERNON_VERSION_MAJOR OR 
+   NOT DEFINED ALGERNON_VERSION_MINOR OR 
+   NOT DEFINED ALGERNON_VERSION_REVISION OR 
+   NOT DEFINED ALGERNON_VERSION)
+    message(FATAL_ERROR "Version variables are not defined. Please set ALGERNON_VERSION_MAJOR, ALGERNON_VERSION_MINOR, ALGERNON_VERSION_REVISION, and ALGERNON_VERSION.")
+endif()
+
+target_compile_definitions(test PRIVATE 
+    ALGERNON_VERSION_MAJOR=${ALGERNON_VERSION_MAJOR}
+    ALGERNON_VERSION_MINOR=${ALGERNON_VERSION_MINOR}
+    ALGERNON_VERSION_REVISION=${ALGERNON_VERSION_REVISION}
+    ALGERNON_VERSION="${ALGERNON_VERSION}"
+)

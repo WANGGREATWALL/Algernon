@@ -146,9 +146,8 @@ namespace file {
         std::vector<std::string> listFull = getFullListIn(folder);
         std::vector<std::string> filtered;
 
-        XRegex re(regex);
         for (auto name : listFull) {
-            if (re.matchable(name)) {
+            if (re::matchRegexInString(name, regex)) {
                 filtered.push_back(name);
             }
         }
@@ -188,8 +187,7 @@ namespace file {
     {
         std::string nameWithoutPath = eliminatePath(filename);
 
-        XRegex regex("_[0-9]{1,5}x[0-9]{1,5}");
-        std::string str = regex.findFirstOneIn(nameWithoutPath);
+        std::string str = re::getFirstMatchInString(nameWithoutPath, "_[0-9]{1,5}x[0-9]{1,5}");
         if (str.empty()) {
             LOGGER_W("failed to find size info in filename(%s)\n", filename.c_str());
             return eliminatePathAndFormat(filename);
@@ -202,8 +200,7 @@ namespace file {
     {
         std::string nameWithoutPath = eliminatePath(filename);
 
-        XRegex regex("_[0-9]{1,5}x[0-9]{1,5}");
-        std::string str = regex.findLastOneIn(nameWithoutPath);
+        std::string str = re::getLastMatchInString(nameWithoutPath, "_[0-9]{1,5}x[0-9]{1,5}");
         if (str.empty()) {
             LOGGER_W("failed to find size info in filename(%s)\n", filename.c_str());
             return eliminatePathAndFormat(filename);
@@ -216,16 +213,14 @@ namespace file {
     {
         std::string nameWithoutPath = eliminatePath(filename);
 
-        XRegex regex("[0-9]{1,5}x[0-9]{1,5}");
-        std::string str = regex.findFirstOneIn(nameWithoutPath);
+        std::string str = re::getFirstMatchInString(nameWithoutPath, "[0-9]{1,5}x[0-9]{1,5}");
         if (str.empty()) {
             LOGGER_W("failed to find size info in filename(%s)\n", filename.c_str());
             return XSizeImage{0, 0};
         }
 
-        regex.reset("[0-9]{1,5}");
-        uint32_t width = std::stoi(regex.findFirstOneIn(str));
-        uint32_t height = std::stoi(regex.findLastOneIn(str));
+        uint32_t width = std::stoi(re::getFirstMatchInString(str, "[0-9]{1,5}"));
+        uint32_t height = std::stoi(re::getLastMatchInString(str, "[0-9]{1,5}"));
 
         return XSizeImage{width, height};
     }
@@ -234,30 +229,26 @@ namespace file {
     {
         std::string nameWithoutPath = eliminatePath(filename);
 
-        XRegex regex("[0-9]{1,5}x[0-9]{1,5}");
-        std::string str = regex.findLastOneIn(nameWithoutPath);
+        std::string str = re::getLastMatchInString(nameWithoutPath, "[0-9]{1,5}x[0-9]{1,5}");
         if (str.empty()) {
             LOGGER_W("failed to find size info in filename(%s)\n", filename.c_str());
             return XSizeImage{0, 0};
         }
-
-        regex.reset("[0-9]{1,5}");
-        uint32_t width = std::stoi(regex.findFirstOneIn(str));
-        uint32_t height = std::stoi(regex.findLastOneIn(str));
+        
+        uint32_t width = std::stoi(re::getFirstMatchInString(str, "[0-9]{1,5}"));
+        uint32_t height = std::stoi(re::getLastMatchInString(str, "[0-9]{1,5}"));
 
         return XSizeImage{width, height};
     }
 
     std::string XFilenameMaker::getFirstMatchedPartByRegex(const std::string& filename, const std::string& regex)
     {
-        XRegex re(regex);
-        return re.findFirstOneIn(filename);
+        return re::getFirstMatchInString(filename, regex);
     }
 
     std::string XFilenameMaker::getLastMatchedPartByRegex(const std::string& filename, const std::string& regex)
     {
-        XRegex re(regex);
-        return re.findLastOneIn(filename);
+        return re::getLastMatchInString(filename, regex);
     }
 
 } // namespace file
