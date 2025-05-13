@@ -20,6 +20,7 @@
 #undef NDEBUG
 // #define NDEBUG
 #include <cassert>
+#include <error.h>
 
 #ifndef TAG_LOGGER
 #define TAG_LOGGER "[unnamed]"
@@ -78,15 +79,5 @@ extern volatile int G_LEVEL_LOGGER;
         return ret; \
     }
 
-
-enum ErrorCode {
-    ECODE_SUCCESS = 0,
-    ECODE_BAD_STATE = 1,
-    ECODE_INVALID_PARAM = 2,
-    ECODE_OUT_OF_RANGE = 3,
-    ECODE_FILE_NOT_EXIST = 4,
-    ECODE_UNSUPPORTED = 5,
-    ECODE_NO_MEMORY = 6
-};
 
 #endif // _LOGGER_H_

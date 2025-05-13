@@ -16,7 +16,15 @@ namespace cv {
     using XPackedType = VRawPackedType;
     using XBayerType = VBayerFilter;
 
-    struct VImageRawExt: public VImage {
+    struct Image {
+        int             width;
+        int             height;
+        int             format;
+        uint8_t*        data[4];
+        int             stride[4];
+    };
+
+    struct VImageRawExt: public Image {
         int             fd[4];
         int             fdOffset[4];
 

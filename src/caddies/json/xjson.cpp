@@ -134,19 +134,19 @@ namespace json {
 
     int XJson::parse(const std::string& filename)
     {
-        ASSERTER_WITH_RET(file::exists(filename), ECODE_FILE_NOT_EXIST);
+        ASSERTER_WITH_RET(file::exists(filename), ERROR_FILE_NOT_FOUND);
 
         memory::XBuffer<char> buffer;
 
         int retLoadBuffer = file::XFile::loadFileToBuffer(filename, buffer);
-        ASSERTER_WITH_RET(retLoadBuffer == ECODE_SUCCESS, retLoadBuffer);
+        ASSERTER_WITH_RET(retLoadBuffer == NO_ERROR, retLoadBuffer);
 
         mJsonRoot = cJSON_Parse(buffer.get());
-        ASSERTER_WITH_INFO(mJsonRoot != nullptr, ECODE_BAD_STATE, "json error before charactor: '%s'", cJSON_GetErrorPtr());
+        ASSERTER_WITH_INFO(mJsonRoot != nullptr, ERROR_BAD_FORMAT, "json error before charactor: '%s'", cJSON_GetErrorPtr());
 
         mNeedDelete = true;
 
-        return ECODE_SUCCESS;
+        return NO_ERROR;
     }
 
     void XJson::clear()

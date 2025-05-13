@@ -39,22 +39,22 @@ namespace file {
 #ifdef __unix__
         mode_t mode = 0755; // permission setting
         if (mkdir(dir.c_str(), mode) == 0) {
-            return ECODE_SUCCESS;
+            return NO_ERROR;
         } else if (errno == EEXIST) {
-            return ECODE_SUCCESS;
+            return NO_ERROR;
         }
 #else
         if (CreateDirectory(dir.c_str(), NULL) || GetLastError() == ERROR_ALREADY_EXISTS) {
-            return ECODE_SUCCESS;
+            return NO_ERROR;
         }
 #endif
-        return ECODE_UNSUPPORTED;
+        return ERROR_NOT_SUPPORTED;
     }
 
 
     int XFile::loadFileToBuffer(const std::string& filename, memory::XBuffer<char>& buffer)
     {
-        ASSERTER_WITH_RET(exists(filename), ECODE_FILE_NOT_EXIST);
+        ASSERTER_WITH_RET(exists(filename), ERROR_FILE_NOT_FOUND);
 
         std::ifstream f(filename, std::ios::binary);
 
@@ -66,33 +66,33 @@ namespace file {
         f.read(buffer.get(), size);
         f.close();
 
-        return ECODE_SUCCESS;
+        return NO_ERROR;
     }
 
     int XFile::saveBufferToFile(const memory::XBuffer<char>& buffer, const std::string& filename)
     {
-        ASSERTER_WITH_RET(buffer.sizeByByte() > 0, ECODE_INVALID_PARAM);
+        ASSERTER_WITH_RET(buffer.sizeByByte() > 0, ERROR_INVALID_PARAMETER);
 
         std::ofstream file(filename, std::fstream::out | std::fstream::binary);
-        ASSERTER_WITH_RET(file.is_open(), ECODE_BAD_STATE);
+        ASSERTER_WITH_RET(file.is_open(), ERROR_OPEN_FAILED);
 
         file.write(buffer.get(), buffer.sizeByByte());
         file.close();
 
-        return ECODE_SUCCESS;
+        return NO_ERROR;
     }
 
     int XFile::saveBufferToFile(const std::string& content, const std::string& filename)
     {
-        ASSERTER_WITH_RET(!content.empty(), ECODE_INVALID_PARAM);
+        ASSERTER_WITH_RET(!content.empty(), ERROR_INVALID_PARAMETER);
 
         std::ofstream file(filename, std::fstream::out | std::fstream::binary);
-        ASSERTER_WITH_RET(file.is_open(), ECODE_BAD_STATE);
+        ASSERTER_WITH_RET(file.is_open(), ERROR_OPEN_FAILED);
 
         file.write(content.data(), content.size());
         file.close();
 
-        return ECODE_SUCCESS;
+        return NO_ERROR;
     }
 
 

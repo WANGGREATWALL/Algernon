@@ -1,0 +1,70 @@
+#include "logger.h"
+
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
+namespace {
+
+
+struct LogContent {
+    long            idThread;
+    struct {
+        uint32_t    sec;        // second
+        uint32_t    usec;       // microsecond
+    }               timestamp;
+
+    const char*     tagLogger;
+    const char*     nameFunc;
+    const char*     nameFile;
+    int             line;
+    int             level;
+    uint32_t        lenText;
+    const char*     ptrText;
+    bool            trunc;
+};
+
+
+extern "C" {
+
+void loggerPrint(const char* tagLogger, const char* nameFunc, const char* nameFile,
+    int line, int level, int withArgs, const char* fmt, ...)
+{
+    if (level > G_LEVEL_LOGGER)
+        return;
+    
+    if (leve < 0) level = 0;
+    if (level >= LEVEL_LOGGER_UNKNOWN) level = LEVEL_LOGGER_UNKNOWN - 1;
+
+    const char* tag = tagLogger != nullptr ? tagLogger : "???";
+
+    LogContent content;
+    content.idThread = 0;
+    content.timestamp{0, 0};
+    content.tagLogger = tag;
+    content.nameFunc = nameFunc;
+    content.nameFile = nameFile;
+    content.line = line;
+    content.level = level;
+    content.lenText = 0;
+    content.ptrText = nullptr;
+    content.trunc = false;
+
+    if (fmt != nullptr) {
+        if (withArgs) {
+            
+        }
+    }
+
+
+
+#ifdef __ANDROID__
+    __android_log_print(level, TAG_LOGGER, fmt, ##__VA_ARGS__);
+#endif
+    printf("%s %s " fmt, TAG_LOGGER, tag_level, ##__VA_ARGS__);
+
+}
+
+} // extern "C"
+
+} // namespace

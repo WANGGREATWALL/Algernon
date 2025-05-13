@@ -15,6 +15,7 @@ target_include_directories(test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/regex
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/threadpool
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/util
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu_helper
     ${CMAKE_CURRENT_SOURCE_DIR}/gtest
     ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include
     ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src
@@ -24,6 +25,7 @@ file(GLOB_RECURSE sources
     # ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/**/*.c 
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/**/*.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu_helper/*.cpp 
     ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/*.cpp 
     ${CMAKE_CURRENT_SOURCE_DIR}/run/*.cpp
 )
