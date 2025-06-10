@@ -8,6 +8,7 @@
 #define CL_HPP_MINIMUM_OPENCL_VERSION 200
 #include "CL/opencl.hpp"
 #include "cl_symbols.h"
+#include "cl_wrapper.h"
 
 #include "log/logger.h"
 #include "gtest/gtest.h"
@@ -161,4 +162,10 @@ TEST(OpenCL, CLHPP)
         std::cout << "\t" << output[i] << "\n";
     }
     std::cout << "\n\n";
+}
+
+TEST(OpenCL, CLWrapper)
+{
+    gpu::CLWrapper ocl("./", "cl_wrapper_test");
+    EXPECT_TRUE(ocl.init() == NO_ERROR);
 }

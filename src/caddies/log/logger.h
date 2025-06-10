@@ -30,7 +30,7 @@
 #define TAG_LOGGER_ERROR            "[error]"
 #define TAG_LOGGER_WARN             "[warn]"
 #define TAG_LOGGER_INFO             "[info]"
-#define TAG_LOGGER_debug            "[debug]"
+#define TAG_LOGGER_DEBUG            "[debug]"
 #define TAG_LOGGER_VERBO            "[verbo]"
 
 #define LEVEL_LOGGER_SILENT         (8)

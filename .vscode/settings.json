@@ -71,6 +71,22 @@
         "iomanip": "cpp",
         "mutex": "cpp",
         "thread": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "any": "cpp",
+        "format": "cpp",
+        "iostream": "cpp",
+        "locale": "cpp",
+        "queue": "cpp",
+        "set": "cpp",
+        "stack": "cpp",
+        "stop_token": "cpp",
+        "unordered_set": "cpp",
+        "variant": "cpp",
+        "xhash": "cpp",
+        "xlocbuf": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp",
+        "xtree": "cpp"
     }
 }

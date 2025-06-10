@@ -16,13 +16,8 @@
 #include <vector>
 #include <map>
 
-#include "cv/ximage.h"
 #include "cl_symbols.h"
-
-#define CL_HPP_ENABLE_EXCEPTIONS
-#define CL_HPP_TARGET_OPENCL_VERSION 200
-#define CL_HPP_MINIMUM_OPENCL_VERSION 200
-#include "CL/opencl.hpp"
+#include "cv/ximage.h"
 
 
 namespace gpu {
@@ -50,26 +45,26 @@ std::string info(const cl::Image& image);
 class CLWrapper {
 public:
     CLWrapper(std::string folderBinary, std::string nameBinary);
-    ~CLWrapper() = default;
+    ~CLWrapper();
 
     CLWrapper(const CLWrapper&) = delete;
     CLWrapper& operator=(const CLWrapper&) = delete;
 
     int init(bool enableProfiling=false);
-    int build(const std::string& kernelString, const std::string optionsCompile="-cl-std=CL2.0");
+    int build(const std::string& kernelString, const std::string optionsCompile="-cl-std=CL2.0 -cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros -cl-unsafe-math-optimizations");
     int createKernels();
 
-    int createBuffer(cl::Buffer& dst, const VImage& image, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createBuffer(cl::Buffer& dst, const Image& image, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createBuffer(cl::Buffer& dst, void* data, size_t sizeInByte, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
 
-    int createImage2D(cl::Image2D& dst, const VImage& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage2D(cl::Image2D& dst, const Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage2D(cl::Image2D& dst, void* data, int width, int height, cl::ImageFormat format={CL_RG, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage2D(cl::Image2D& dst, int width, int height, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_WRITE);
 
-    int createImage3D(cl::Image3D& dst, const VImage& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage3D(cl::Image3D& dst, const Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage3D(cl::Image3D& dst, void* data, int width, int height, int depth, cl::ImageFormat format={CL_RG, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage3D(cl::Image3D& dst, int width, int height, int depth, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_WRITE);
-
+    
     int copyImage2D(cl::Image2D& dst, const cl::Image2D& src);
 
     int readImage2D(cv::XImage& dst, const cl::Image2D& image, bool block);
@@ -77,25 +72,19 @@ public:
     int readImage2D(void* dst, const cl::Image2D& image, int width, int height, int pitch, bool block);
 
     /**
-     * @note Three steps to use memory-mapped:
-     *  1. enqueue the memory map operation with mapImage2D();
-     *  2. Then transfer data to and from the mapped memory with a function like memcpy();
-     *  3. Last, unmap the region by calling unmapImage2D();
-     * @param dst the mapping output host image, no need to alloc memory by host, could be 1/2 plane
+     * @param dst the mapping output host image, could be 1/2 plane
      * @param image the cl mem object to be mapped
      */
-    int mapImage2D(cv::XImage& dst, const cl::Image2D& image, bool block);
-    int mapImage2D(cv::XImage& dst, const cl::Image2D& plane0, const cl::Image2D& plane1, bool block);
-    int mapImage2D(void* dst, const cl::Image2D& image, size_t width, size_t height, size_t pitch, bool block);
+    int mapImage2D(cv::XImage& dst, const cl::Image2D& image);
+    int mapImage2D(cv::XImage& dst, const cl::Image2D& plane0, const cl::Image2D& plane1);
 
-    int unmapImage2D(const cv::XImage& src, const cl::Image2D& image);
-    int unmapImage2D(const cv::XImage& src, const cl::Image2D& plane0, const cl::Image2D& plane1);
-    int unmapImage2D(void* src, const cl::Image2D& image);
+    void* mallocSVM(size_t sizeInByte, size_t align=64, cl_mem_flags flags=CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER);
+    int freeSVM(void* data);
 
     CLWrapper& setNDRange(cl::NDRange global, cl::NDRange local={1,1}, cl::NDRange offset={0,0});
 
     template <typename... Args>
-    int enqueue(std::string nameKernel, Args... args) {
+    int enqueue(std::string nameKernel, cl::Event* event=nullptr, Args... args) {
         cl::Kernel kernel;
         int retGetKernel = getKernel(kernel, nameKernel);
         ASSERTER_WITH_RET(retGetKernel == VDKResultSuccess, retGetKernel);
@@ -107,17 +96,41 @@ public:
             ASSERTER_WITH_INFO(setargs[i] == CL_SUCCESS, VDKResultEInvalidParam, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
         }
 
-        cl::Event event;
-        int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, &event);
-        ASSERTER_WITH_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
-        mEvents.emplace_back(nameKernel, event);
-
+        if (event) {
+            int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, event);
+            ASSERTER_WITH_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
+            mEvents.emplace_back(nameKernel, *event);
+        } else {
+            cl::Event eventInner;
+            int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, &eventInner);
+            ASSERTER_WITH_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
+            mEvents.emplace_back(nameKernel, eventInner);
+        }
+        
         return VDKResultSuccess;
     }
 
+    /**
+     * @brief
+     * - flush(): batch submission of the above commands
+     * - finish(): program end full sync
+     * - wait(): wait for a specific event to complete
+     * - barrier(): order barrier between commands
+     * @note
+     *           | BLOCK HOST | WAIT COMMAND TO COMPLETE
+     * ----------|------------|-------------------------
+     * flush()   | NO         | NO
+     * finish()  | YES        | YES
+     * wait()    | YES        | YES
+     * barrier() | NO         | NO
+     */
+    int flush();
     int finish();
+    int wait(const cl::Event& event);
+    int barrier();
 
-    int querySupportedImageFormats(const cl_mem_object_type object=CL_MEM_OBJECT_IMAGE2D, const cl_mem_flags flags=CL_MEM_READ_ONLY);
+    int querySupportedImageFormats(const cl_mem_object_type object=CL_MEM_OBJECT_IMAGE2D, const cl_mem_flags flags=CL_MEM_READ_ONLY) const;
+    int querySVMCapabilities() const;
 
 private:
     struct CLEvent {
@@ -164,6 +177,7 @@ private:
     cl::Program mProgram;
     std::map<std::string, cl::Kernel> mKernels;
     std::vector<CLEvent> mEvents;
+    std::vector<void*> mSVMs;
 
     std::string mStringKernel;
     std::string mStringBinary;
