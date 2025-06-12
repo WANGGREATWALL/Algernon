@@ -76,6 +76,11 @@ public:
         return mParser->call<decltype(clGetContextInfo)>("clGetContextInfo", context, param_name, param_value_size, param_value, param_value_size_ret);
     }
 
+    cl_context proxy_clCreateContext(const cl_context_properties *properties, cl_uint num_devices, const cl_device_id *devices, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret)
+    {
+        return mParser->call<decltype(clCreateContext)>("clCreateContext", properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
+    }
+
     // program
     // ==============================
     cl_int proxy_clReleaseProgram(cl_program program) {
@@ -98,6 +103,10 @@ public:
         return mParser->call<decltype(clGetProgramBuildInfo)>("clGetProgramBuildInfo", program, device, param_name, param_value_size, param_value, param_value_size_ret);
     }
 
+    cl_program proxy_clCreateProgramWithBinary(cl_context context, cl_uint num_devices, const cl_device_id *device_list, const size_t *lengths, const unsigned char **binaries, cl_int *binary_status, cl_int *errcode_ret) {
+        return mParser->call<decltype(clCreateProgramWithBinary)>("clCreateProgramWithBinary", context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
+    }
+
     // command queue
     // ==============================
     cl_int proxy_clRetainCommandQueue(cl_command_queue command_queue) {
@@ -116,6 +125,22 @@ public:
         return mParser->call<decltype(clEnqueueNDRangeKernel)>("clEnqueueNDRangeKernel", command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
     }
 
+    cl_int proxy_clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t *origin, const size_t *region, size_t row_pitch, size_t slice_pitch, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
+        return mParser->call<decltype(clEnqueueReadImage)>("clEnqueueReadImage", command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+    }
+
+    cl_int proxy_clEnqueueCopyImage(cl_command_queue command_queue, cl_mem src_image, cl_mem dst_image, const size_t *src_origin, const size_t *dst_origin, const size_t *region, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
+        return mParser->call<decltype(clEnqueueCopyImage)>("clEnqueueCopyImage", command_queue, src_image, dst_image, src_origin, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
+    }
+
+    void* proxy_clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_map, cl_map_flags map_flags, const size_t *origin, const size_t *region, size_t *image_row_pitch, size_t *image_slice_pitch, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event, cl_int *errcode_ret) {
+        return mParser->call<decltype(clEnqueueMapImage)>("clEnqueueMapImage", command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+    }
+
+    cl_int proxy_clEnqueueBarrierWithWaitList(cl_command_queue command_queue, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
+        return mParser->call<decltype(clEnqueueBarrierWithWaitList)>("clEnqueueBarrierWithWaitList", command_queue, num_events_in_wait_list, event_wait_list, event);
+    }
+
     // mem object
     // ==============================
     cl_int proxy_clRetainMemObject(cl_mem memobj) {
@@ -128,6 +153,10 @@ public:
 
     cl_mem proxy_clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void *host_ptr, cl_int *errcode_ret) {
         return mParser->call<decltype(clCreateBuffer)>("clCreateBuffer", context, flags, size, host_ptr, errcode_ret);
+    }
+
+    cl_mem proxy_clCreateImage(cl_context context, cl_mem_flags flags, const cl_image_format *image_format, const cl_image_desc *image_desc, void *host_ptr, cl_int *errcode_ret) {
+        return mParser->call<decltype(clCreateImage)>("clCreateImage", context, flags, image_format, image_desc, host_ptr, errcode_ret);
     }
 
     void* proxy_clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment) {
@@ -154,6 +183,14 @@ public:
         return mParser->call<decltype(clEnqueueUnmapMemObject)>("clEnqueueUnmapMemObject", command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
     }
 
+    cl_int proxy_clGetSupportedImageFormats(cl_context context, cl_mem_flags flags, cl_mem_object_type image_type, cl_uint num_entries, cl_image_format *image_formats, cl_uint *num_image_formats) {
+        return mParser->call<decltype(clGetSupportedImageFormats)>("clGetSupportedImageFormats", context, flags, image_type, num_entries, image_formats, num_image_formats);
+    }
+
+    cl_int proxy_clGetImageInfo(cl_mem image, cl_image_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+        return mParser->call<decltype(clGetImageInfo)>("clGetImageInfo", image, param_name, param_value_size, param_value, param_value_size_ret);
+    }
+
     // kernel
     // ==============================
     cl_int proxy_clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint arg_index, const void *arg_value) {
@@ -176,6 +213,18 @@ public:
         return mParser->call<decltype(clSetKernelExecInfo)>("clSetKernelExecInfo", kernel, param_name, param_value_size, param_value);
     }
 
+    cl_int proxy_clGetKernelInfo(cl_kernel kernel, cl_kernel_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+        return mParser->call<decltype(clGetKernelInfo)>("clGetKernelInfo", kernel, param_name, param_value_size, param_value, param_value_size_ret);
+    }
+
+    cl_int proxy_clRetainKernel(cl_kernel kernel) {
+        return mParser->call<decltype(clRetainKernel)>("clRetainKernel", kernel);
+    }
+
+    cl_int  proxy_clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kernel *kernels, cl_uint *num_kernels_ret) {
+        return mParser->call<decltype(clCreateKernelsInProgram)>("clCreateKernelsInProgram", program, num_kernels, kernels, num_kernels_ret);
+    }
+
     // event
     // ==============================
     cl_int proxy_clReleaseEvent(cl_event event) {
@@ -184,6 +233,22 @@ public:
 
     cl_int proxy_clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
         return mParser->call<decltype(clWaitForEvents)>("clWaitForEvents", num_events, event_list);
+    }
+
+    cl_int proxy_clRetainEvent(cl_event event) {
+        return mParser->call<decltype(clRetainEvent)>("clRetainEvent", event);
+    }
+
+    cl_int proxy_clGetEventProfilingInfo(cl_event event, cl_profiling_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
+        return mParser->call<decltype(clGetEventProfilingInfo)>("clGetEventProfilingInfo", event, param_name, param_value_size, param_value, param_value_size_ret);
+    }
+
+    cl_int proxy_clFlush(cl_command_queue command_queue) {
+        return mParser->call<decltype(clFlush)>("clFlush", command_queue);
+    }
+
+    cl_int proxy_clFinish(cl_command_queue command_queue) {
+        return mParser->call<decltype(clFinish)>("clFinish", command_queue);
     }
 
 private:

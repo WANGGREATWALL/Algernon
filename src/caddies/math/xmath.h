@@ -22,7 +22,7 @@ template <typename T>
 T maxOf(T val0, T val1, T val2) { std::max(val0, std::max(val1, val2)); }
 
 double powd(const double& base, const double& exponent) { return std::pow(base, exponent); }
-float powf(const float& base, const float& exponent) { return std::powf(base, exponent); }
+float powf(const float& base, const float& exponent) { return std::pow(base, exponent); }
 
 template <typename T> // [min, max]
 bool isInRangeCC(T val, T min, T max) { return val >= min && val <= max; }

@@ -54,29 +54,29 @@ public:
     int build(const std::string& kernelString, const std::string optionsCompile="-cl-std=CL2.0 -cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros -cl-unsafe-math-optimizations");
     int createKernels();
 
-    int createBuffer(cl::Buffer& dst, const Image& image, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createBuffer(cl::Buffer& dst, const cv::Image& image, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createBuffer(cl::Buffer& dst, void* data, size_t sizeInByte, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
 
-    int createImage2D(cl::Image2D& dst, const Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage2D(cl::Image2D& dst, const cv::Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage2D(cl::Image2D& dst, void* data, int width, int height, cl::ImageFormat format={CL_RG, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage2D(cl::Image2D& dst, int width, int height, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_WRITE);
 
-    int createImage3D(cl::Image3D& dst, const Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage3D(cl::Image3D& dst, const cv::Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage3D(cl::Image3D& dst, void* data, int width, int height, int depth, cl::ImageFormat format={CL_RG, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     int createImage3D(cl::Image3D& dst, int width, int height, int depth, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_WRITE);
     
     int copyImage2D(cl::Image2D& dst, const cl::Image2D& src);
 
-    int readImage2D(cv::XImage& dst, const cl::Image2D& image, bool block);
-    int readImage2D(cv::XImage& dst, const cl::Image2D& plane0, const cl::Image2D& plane1);
+    int readImage2D(cv::Image& dst, const cl::Image2D& image, bool block);
+    int readImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1);
     int readImage2D(void* dst, const cl::Image2D& image, int width, int height, int pitch, bool block);
 
     /**
      * @param dst the mapping output host image, could be 1/2 plane
      * @param image the cl mem object to be mapped
      */
-    int mapImage2D(cv::XImage& dst, const cl::Image2D& image);
-    int mapImage2D(cv::XImage& dst, const cl::Image2D& plane0, const cl::Image2D& plane1);
+    int mapImage2D(cv::Image& dst, const cl::Image2D& image);
+    int mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1);
 
     void* mallocSVM(size_t sizeInByte, size_t align=64, cl_mem_flags flags=CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER);
     int freeSVM(void* data);
@@ -87,13 +87,13 @@ public:
     int enqueue(std::string nameKernel, cl::Event* event=nullptr, Args... args) {
         cl::Kernel kernel;
         int retGetKernel = getKernel(kernel, nameKernel);
-        ASSERTER_WITH_RET(retGetKernel == VDKResultSuccess, retGetKernel);
+        ASSERTER_WITH_RET(retGetKernel == NO_ERROR, retGetKernel);
 
         int idx = 0;
         std::vector<int> setargs{ [&] { return kernel.setArg(idx++, args); }()... };
 
         for (int i = 0; i < setargs.size(); ++i) {
-            ASSERTER_WITH_INFO(setargs[i] == CL_SUCCESS, VDKResultEInvalidParam, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
+            ASSERTER_WITH_INFO(setargs[i] == CL_SUCCESS, ERROR_INVALID_PARAMETER, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
         }
 
         if (event) {
@@ -107,7 +107,7 @@ public:
             mEvents.emplace_back(nameKernel, eventInner);
         }
         
-        return VDKResultSuccess;
+        return NO_ERROR;
     }
 
     /**
@@ -177,7 +177,6 @@ private:
     cl::Program mProgram;
     std::map<std::string, cl::Kernel> mKernels;
     std::vector<CLEvent> mEvents;
-    std::vector<void*> mSVMs;
 
     std::string mStringKernel;
     std::string mStringBinary;

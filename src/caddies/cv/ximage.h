@@ -14,14 +14,16 @@ enum XImageFormat : int {
     kXFormatInvalid         = 0,
     kXFormatGrayU8          = 1,
     kXFormatGrayU16         = 2,
-    kXFormatNV12            = 3,
-    kXFormatNV21            = 4,
-    kXFormatRGBU8           = 5,
-    kXFormatBGRU8           = 6,
-    kXFormatRGBAU8          = 7,
-    kXFormatBGRAU8          = 8,
-    kXFormatRawU16          = 9,
-    kXFormatRawPackedU10    = 10
+    kXFormatGrayU32         = 3,
+    kXFormatNV12            = 10,
+    kXFormatNV21            = 11,
+    kXFormatUV              = 12,
+    kXFormatRGBU8           = 20,
+    kXFormatBGRU8           = 21,
+    kXFormatRGBAU8          = 22,
+    kXFormatBGRAU8          = 23,
+    kXFormatRawU16          = 30,
+    kXFormatRawPackedU10    = 31
 };
 
 enum XImagePlane : int {
@@ -41,10 +43,10 @@ struct Image {
 
 
 struct ImageRaw : public Image {
-    int             fd[4];
-    int             fdOffset[4];
-    int             scanline[4]; /* height of each plane */
-    int             dataSize[4]; /* mem size of each plane */
+    int                     fd[4];
+    int                     fdOffset[4];
+    int                     scanline[4]; /* height of each plane */
+    int                     dataSize[4]; /* mem size of each plane */
 };
 
 

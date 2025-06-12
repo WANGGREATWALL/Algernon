@@ -7,25 +7,25 @@
 - `GCC 8.1.0 x86_64-w64-mingw32`;
 
 ## 2 todo
-- [ ] caddies
-    - [ ] cv
-        - [ ] ximage
-    - [ ] file
-        - [ ] xfile
-    - [ ] json
-        - [ ] xjson
-    - [ ] log
-        - [ ] logger
-    - [ ] memory
-        - [ ] xbuffer
-    - [ ] perf
-        - [ ] timer
-        - [ ] performance
+- [x] caddies
+    - [x] cv
+        - [x] ximage
+    - [x] file
+        - [x] xfile
+    - [x] json
+        - [x] xjson
+    - [x] log
+        - [x] logger
+    - [x] memory
+        - [x] xbuffer
+    - [x] perf
+        - [x] timer
+        - [x] performance
     - [x] regex
         - [x] xregex
-    - [ ] threadpool
-        - [ ] xthreadpool
+    - [x] threadpool
+        - [x] xthreadpool
     - [x] util
         - [x] argument_parser
-- [ ] gpu_helper
+- [x] gpu_helper
 - [x] gtest 

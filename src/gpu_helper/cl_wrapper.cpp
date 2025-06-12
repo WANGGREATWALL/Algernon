@@ -1,3 +1,5 @@
+#include <set>
+
 #include "log/logger.h"
 #include "cl_wrapper.h"
 #include "perf/performance.h"
@@ -73,10 +75,200 @@ std::string clErrorInfo(int err)
     return "CL_UNKNOWN_ERROR";
 }
 
+std::map<cl_channel_order, std::string> mapChannelOrder = {
+    {CL_R,          "CL_R"},
+    {CL_A,          "CL_A"},
+    {CL_RG,         "CL_RG"},
+    {CL_RA,         "CL_RA"},
+    {CL_RGB,        "CL_RGB"},
+    {CL_RGBA,       "CL_RGBA"},
+    {CL_BGRA,       "CL_BGRA"},
+    {CL_ARGB,       "CL_ARGB"},
+    {CL_INTENSITY,  "CL_INTENSITY"},
+    {CL_LUMINANCE,  "CL_LUMINANCE"}
+};
+
+std::map<cl_channel_type, std::string> mapChannelDataType = {
+    {CL_SNORM_INT8,         "CL_SNORM_INT8"},
+    {CL_SNORM_INT16,        "CL_SNORM_INT16"},
+    {CL_UNORM_INT8,         "CL_UNORM_INT8"},
+    {CL_UNORM_INT16,        "CL_UNORM_INT16"},
+    {CL_UNORM_SHORT_565,    "CL_UNORM_SHORT_565"},
+    {CL_UNORM_SHORT_555,    "CL_UNORM_SHORT_555"},
+    {CL_UNORM_INT_101010,   "CL_UNORM_INT_101010"},
+    {CL_SIGNED_INT8,        "CL_SIGNED_INT8"},
+    {CL_SIGNED_INT16,       "CL_SIGNED_INT16"},
+    {CL_SIGNED_INT32,       "CL_SIGNED_INT32"},
+    {CL_UNSIGNED_INT8,      "CL_UNSIGNED_INT8"},
+    {CL_UNSIGNED_INT16,     "CL_UNSIGNED_INT16"},
+    {CL_UNSIGNED_INT32,     "CL_UNSIGNED_INT32"},
+    {CL_HALF_FLOAT,         "CL_HALF_FLOAT"},
+    {CL_FLOAT,              "CL_FLOAT"}
+};
+
+int getChannelBitWidth(const cl_channel_type& typeChannel)
+{
+    switch (typeChannel) {
+        case CL_SNORM_INT8:
+        case CL_UNORM_INT8:
+        case CL_SIGNED_INT8:
+        case CL_UNSIGNED_INT8:
+            return 8;
+        case CL_SNORM_INT16:
+        case CL_UNORM_INT16:
+        case CL_SIGNED_INT16:
+        case CL_UNSIGNED_INT16:
+        case CL_HALF_FLOAT:
+            return 16;
+        case CL_SIGNED_INT32:
+        case CL_UNSIGNED_INT32:
+        case CL_FLOAT:
+            return 32;
+        default:
+            return -1;
+    }
+}
+
+int convertCLImageFormat2NTIFormat(const cl_image_format& fmtCL, int& fmtCV)
+{
+    int bit = getChannelBitWidth(fmtCL.image_channel_data_type);
+    ASSERTER_WITH_RET(bit > 0, ERROR_INVALID_PARAMETER);
+
+    if (fmtCL.image_channel_order == CL_R) {
+        switch (bit) {
+            case 8:  fmtCV = cv::kXFormatGrayU8; break;
+            case 16: fmtCV = cv::kXFormatGrayU16; break;
+            case 32: fmtCV = cv::kXFormatGrayU32; break;
+            default: return ERROR_UNSUPPORTED_TYPE;
+        }
+    }
+    else if (fmtCL.image_channel_order == CL_RG) {
+        switch (bit) {
+            case 8:  fmtCV = cv::kXFormatUV; break;
+            default: return ERROR_UNSUPPORTED_TYPE;
+        }
+    }
+    else if (fmtCL.image_channel_order == CL_RGB) {
+        switch (bit) {
+            case 8:  fmtCV = cv::kXFormatRGBU8; break;
+            default: return ERROR_UNSUPPORTED_TYPE;
+        }
+    }
+    else if (fmtCL.image_channel_order == CL_RGBA || fmtCL.image_channel_order == CL_BGRA) {
+        switch (bit) {
+            case 8:  fmtCV = cv::kXFormatRGBAU8; break;
+            default: return ERROR_UNSUPPORTED_TYPE;
+        }
+    } else {
+        fmtCV = 0;
+        return ERROR_UNSUPPORTED_TYPE;
+    }
+    
+    return NO_ERROR;
+}
+
+size_t getImageWidth(const cl::Image& image)
+{
+    int ret = CL_SUCCESS;
+    cl::size_type width = image.getImageInfo<CL_IMAGE_WIDTH>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+
+    return width;
+}
+
+size_t getImageHeight(const cl::Image& image)
+{
+    int ret = CL_SUCCESS;
+    cl::size_type height = image.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+
+    return height;
+}
+
+size_t getImagePitch(const cl::Image& image)
+{
+    cl_int ret = CL_SUCCESS;
+    cl::size_type pitch = image.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+
+    return pitch;
+}
+
+size_t getImageDepth(const cl::Image& image)
+{
+    cl_int ret = CL_SUCCESS;
+    cl::size_type depth = image.getImageInfo<CL_IMAGE_DEPTH>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+
+    return depth;
+}
+
+bool isValid(const cl::Image& image)
+{
+    return getImageWidth(image) > 0 && getImageHeight(image) > 0;
+}
+
+bool isFormat(const cl::Image& image, const cl_image_format& format)
+{
+    int ret = CL_SUCCESS;
+    cl_image_format fmt = image.getImageInfo<CL_IMAGE_FORMAT>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
+
+    return fmt.image_channel_order == format.image_channel_order && fmt.image_channel_data_type == format.image_channel_data_type;
+}
+
+bool isSize(const cl::Image& image, size_t width, size_t height, size_t depth)
+{
+    return getImageWidth(image) == width && getImageHeight(image) == height && getImageDepth(image) == depth;
+}
+
+bool isSameSize(const cl::Image& image0, const cl::Image& image1)
+{
+    return getImageWidth(image0) == getImageWidth(image1) 
+        && getImageHeight(image0) == getImageHeight(image1) 
+        && getImageDepth(image0) == getImageDepth(image1);
+}
+
+bool isSameFormat(const cl::Image& image0, const cl::Image& image1)
+{
+    int ret = CL_SUCCESS;
+    cl_image_format fmt0 = image0.getImageInfo<CL_IMAGE_FORMAT>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
+
+    cl_image_format fmt1 = image1.getImageInfo<CL_IMAGE_FORMAT>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
+
+    return fmt0.image_channel_order == fmt1.image_channel_order && fmt0.image_channel_data_type == fmt1.image_channel_data_type;
+}
+
+bool isSameSizeAndFormat(const cl::Image& image0, const cl::Image& image1)
+{
+    return isSameSize(image0, image1) && isSameFormat(image0, image1);
+}
+
+std::string info(const cl::Image& image)
+{
+    char str[256];
+
+    int ret = CL_SUCCESS;
+    cl_image_format fmt = image.getImageInfo<CL_IMAGE_FORMAT>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, "unknown", "clError: %s", clErrorInfo(ret).c_str());
+
+    snprintf(str, 256, "[%zux%zux%zu], fmt:{%s, %s}", getImageWidth(image), getImageHeight(image), getImageDepth(image),
+        mapChannelOrder[fmt.image_channel_order].c_str(), mapChannelDataType[fmt.image_channel_data_type].c_str());
+    
+    return std::string(str);
+}
+
 CLWrapper::CLWrapper(std::string folderBinary, std::string nameBinary)
 {
     mFolderBinary = file::XFilenameMaker::getFolder(folderBinary + "/");
     mNameBinaryWithoutFormat = file::XFilenameMaker::eliminatePathAndFormat(nameBinary);
+}
+
+CLWrapper::~CLWrapper()
+{
+    perf::TracerScoped trace("CLWrapper::~CLWrapper");
 }
 
 int CLWrapper::init(bool enableProfiling)
@@ -156,6 +348,36 @@ int CLWrapper::createKernels()
     return NO_ERROR;
 }
 
+int CLWrapper::createBuffer(cl::Buffer& dst, const cv::Image& image, cl_mem_flags flags)
+{
+    ASSERTER_WITH_RET(cv::isValid(image), ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(cv::isFormatIn(image, {
+        cv::kXFormatGrayU8,
+        cv::kXFormatGrayU16,
+        cv::kXFormatGrayU32,
+        cv::kXFormatRGBU8,
+        cv::kXFormatBGRU8,
+        cv::kXFormatRGBAU8,
+        cv::kXFormatBGRAU8}), ERROR_UNSUPPORTED_TYPE);
+
+    int ret = CL_SUCCESS;
+    dst = cl::Buffer(mContext, flags, image.height * image.stride[0], image.data[0], &ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+
+    return NO_ERROR;
+}
+
+int CLWrapper::createBuffer(cl::Buffer& dst, void* data, size_t sizeInByte, cl_mem_flags flags)
+{
+    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
+
+    int ret = CL_SUCCESS;
+    dst = cl::Buffer(mContext, flags, sizeInByte, data, &ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+
+    return NO_ERROR;
+}
+
 int CLWrapper::createImage2D(cl::Image2D& dst, const cv::Image& image, cl::ImageFormat format, cl_mem_flags flags)
 {
     ASSERTER_WITH_RET(cv::isValid(image), ERROR_INVALID_PARAMETER);
@@ -190,11 +412,69 @@ int CLWrapper::createImage2D(cl::Image2D& dst, int width, int height, cl::ImageF
     return NO_ERROR;
 }
 
+int CLWrapper::createImage3D(cl::Image3D& dst, const cv::Image& image, cl::ImageFormat format, cl_mem_flags flags)
+{
+    ASSERTER_WITH_RET(cv::isValid(image), ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(cv::isFormatIn(image, {
+        cv::kXFormatGrayU8,
+        cv::kXFormatGrayU16,
+        cv::kXFormatGrayU32,
+        cv::kXFormatRGBU8,
+        cv::kXFormatBGRU8,
+        cv::kXFormatRGBAU8,
+        cv::kXFormatBGRAU8}), ERROR_UNSUPPORTED_TYPE);
+    ASSERTER_WITH_RET(image.width * image.width == image.height, ERROR_INVALID_PARAMETER);
+
+    int ret = CL_SUCCESS;
+    dst = cl::Image3D(mContext, flags, format, image.width, image.width, image.width, 0, 0, image.data[0], &ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+
+    return NO_ERROR;
+}
+
+int CLWrapper::createImage3D(cl::Image3D& dst, void* data, int width, int height, int depth, cl::ImageFormat format, cl_mem_flags flags)
+{
+    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
+
+    int ret = CL_SUCCESS;
+    dst = cl::Image3D(mContext, flags, format, width, height, depth, 0, 0, data, &ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+
+    return NO_ERROR;
+}
+
+int CLWrapper::createImage3D(cl::Image3D& dst, int width, int height, int depth, cl::ImageFormat format, cl_mem_flags flags)
+{
+    int ret = CL_SUCCESS;
+    dst = cl::Image3D(mContext, flags, format, width, height, depth, 0, 0, nullptr, &ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+
+    return NO_ERROR;
+}
+
+int CLWrapper::copyImage2D(cl::Image2D& dst, const cl::Image2D& src)
+{
+    ASSERTER_WITH_RET(isValid(src), ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(isSameSizeAndFormat(src, dst), ERROR_INVALID_PARAMETER);
+
+    auto width = getImageWidth(src);
+    auto height = getImageHeight(src);
+
+    cl::Event event;
+    int retCopyImage = mCommandQueue.enqueueCopyImage(src, dst, {0, 0, 0}, {0, 0, 0}, {width, height, 1}, 0, &event);
+    ASSERTER_WITH_INFO(retCopyImage == CL_SUCCESS, retCopyImage, "clError: %s", clErrorInfo(retCopyImage).c_str());
+
+    mEvents.emplace_back("copyImage2D", event);
+
+    return NO_ERROR;
+}
+
 int CLWrapper::readImage2D(cv::Image& dst, const cl::Image2D& image, bool block)
 {
     perf::TracerScoped trace("CLWrapper::readImage2D");
 
     ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(isSize(image, dst.width, dst.height), ERROR_INVALID_PARAMETER);
 
     cl::Event event;
     int retReadImage = mCommandQueue.enqueueReadImage(image, block, {0, 0, 0}, {(cl::size_type)dst.width, (cl::size_type)dst.height, 1}, dst.stride[0], 0, dst.data[0], 0, &event);
@@ -215,35 +495,19 @@ int CLWrapper::readImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::
     cl_int ret = CL_SUCCESS;
 
     trace.sub("query");
-    cl::size_type pitch0 = plane0.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    ASSERTER_WITH_RET(isSize(plane0, dst.width, dst.height), ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(isSize(plane1, dst.width / 2, dst.height / 2), ERROR_INVALID_PARAMETER);
 
-    cl::size_type pitch1 = plane1.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type width0 = plane0.getImageInfo<CL_IMAGE_WIDTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type width1 = plane1.getImageInfo<CL_IMAGE_WIDTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type height0 = plane0.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type height1 = plane1.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    ASSERTER_WITH_RET(pitch0 == pitch1, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(width0 == width1 * 2, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(height0 == height1 * 2, ERROR_INVALID_PARAMETER);
+    size_t pitch0 = getImagePitch(plane0);
+    size_t pitch1 = getImagePitch(plane1);
 
     trace.sub("read");
     cl::Event event;
-    int retReadImage0 = mCommandQueue.enqueueReadImage(plane0, false, {0, 0, 0}, {(cl::size_type)width0, (cl::size_type)height0, 1}, pitch0, 0, dst.data[0], 0, &event);
+    int retReadImage0 = mCommandQueue.enqueueReadImage(plane0, false, {0, 0, 0}, {(cl::size_type)dst.width, (cl::size_type)dst.height, 1}, pitch0, 0, dst.data[0], 0, &event);
     ASSERTER_WITH_INFO(retReadImage0 == CL_SUCCESS, retReadImage0, "clError: %s", clErrorInfo(retReadImage0).c_str());
     mEvents.emplace_back("readImage2DP0", event);
 
-    int retReadImage1 = mCommandQueue.enqueueReadImage(plane1, false, {0, 0, 0}, {(cl::size_type)width1, (cl::size_type)height1, 1}, pitch1, 0, dst.data[1], 0, &event);
+    int retReadImage1 = mCommandQueue.enqueueReadImage(plane1, false, {0, 0, 0}, {(cl::size_type)dst.width >> 1, (cl::size_type)dst.height >> 1, 1}, pitch1, 0, dst.data[1], 0, &event);
     ASSERTER_WITH_INFO(retReadImage1 == CL_SUCCESS, retReadImage1, "clError: %s", clErrorInfo(retReadImage1).c_str());
     mEvents.emplace_back("readImage2DP1", event);
 
@@ -264,14 +528,13 @@ int CLWrapper::readImage2D(void* dst, const cl::Image2D& image, int width, int h
     return NO_ERROR;
 }
 
-int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& image, bool block)
+int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& image)
 {
     perf::TracerScoped trace("CLWrapper::mapImage2D");
 
     ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
     ASSERTER_WITH_RET(cv::isFormatIn(dst, {
         cv::kXFormatGrayU8,
-        cv::kXFormatGrayU16,
         cv::kXFormatRGBU8,
         cv::kXFormatBGRU8,
         cv::kXFormatRGBAU8,
@@ -280,103 +543,99 @@ int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& image, bool block)
     cl_int ret = CL_SUCCESS;
 
     trace.sub("query");
-    cl::size_type pitch = image.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type width = image.getImageInfo<CL_IMAGE_WIDTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type height = image.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    if (cv::isFormat(dst, cv::kXFormatGrayU8)) {
-        ASSERTER_WITH_RET(width == pitch, ERROR_INVALID_PARAMETER);
-    }
-    else if (cv::isFormat(dst, cv::kXFormatGrayU16)) {
-        ASSERTER_WITH_RET(width * 2 == pitch, ERROR_INVALID_PARAMETER);
-    }
-    else if (cv::isFormatIn(dst, {cv::kXFormatRGBU8, cv::kXFormatBGRU8})) {
-        ASSERTER_WITH_RET(width * 3 == pitch, ERROR_INVALID_PARAMETER);
-    }
-    else if (cv::isFormatIn(dst, {cv::kXFormatRGBAU8, cv::kXFormatBGRAU8})) {
-        ASSERTER_WITH_RET(width * 4 == pitch, ERROR_INVALID_PARAMETER);
-    }
-    else {
-        ASSERTER_WITH_RET(false, ERROR_INVALID_PARAMETER);
-    }
+    cl::size_type pitch = getImagePitch(image);
+    cl::size_type width = getImageWidth(image);
+    cl::size_type height = getImageHeight(image);
+    
+    ASSERTER_WITH_RET(dst.height == height, ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(dst.width <= pitch, ERROR_INVALID_PARAMETER);
 
     trace.sub("map");
     cl::Event event;
-    void* data = mCommandQueue.enqueueMapImage(image, block, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {(cl::size_type)width, (cl::size_type)height, 1}, &pitch, 0, 0, &event, &ret);
+    void* data = mCommandQueue.enqueueMapImage(image, CL_TRUE, CL_MAP_READ, {0, 0, 0}, {width, height, 1}, &pitch, 0, 0, &event, &ret);
     ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
     mEvents.emplace_back("mapImage", event);
 
     trace.sub("copy");
-    memcpy(dst.data[0], data, pitch * height);
+    for (int i = 0; i < dst.height; ++i) {
+        auto dataSrc = (uint8_t*)data + pitch * i;
+        auto dataDst = dst.data[0] + i * dst.stride[0];
+        memcpy(dataDst, dataSrc, dst.stride[0]);
+    }
 
     trace.sub("unmap");
-    int retUnmapImage = mCommandQueue.enqueueUnmapMemObject(image, data, 0, &event);
+    auto retUnmapImage = mCommandQueue.enqueueUnmapMemObject(image, data, 0, &event);
     ASSERTER_WITH_INFO(retUnmapImage == CL_SUCCESS, retUnmapImage, "clError: %s", clErrorInfo(retUnmapImage).c_str());
     mEvents.emplace_back("unmapImage", event);
 
     return NO_ERROR;
 }
 
-int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1, bool block)
+int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1)
 {
     perf::TracerScoped trace("CLWrapper::mapImage2D");
 
     ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
     ASSERTER_WITH_RET(cv::isFormatIn(dst, {cv::kXFormatNV12, cv::kXFormatNV21}), ERROR_INVALID_PARAMETER);
     
-    int ret = CL_SUCCESS;
+    cl_int ret = CL_SUCCESS;
 
     trace.sub("query");
-    cl::size_type pitch0 = plane0.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type pitch1 = plane1.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type width0 = plane0.getImageInfo<CL_IMAGE_WIDTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type width1 = plane1.getImageInfo<CL_IMAGE_WIDTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type height0 = plane0.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
-
-    cl::size_type height1 = plane1.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    cl::size_type pitch0 = getImagePitch(plane0);
+    cl::size_type pitch1 = getImagePitch(plane1);
+    cl::size_type width0 = getImageWidth(plane0);
+    cl::size_type width1 = getImageWidth(plane1);
+    cl::size_type height0 = getImageHeight(plane0);
+    cl::size_type height1 = getImageHeight(plane1);
 
     ASSERTER_WITH_RET(pitch0 == pitch1, ERROR_INVALID_PARAMETER);
     ASSERTER_WITH_RET(width0 == width1 * 2, ERROR_INVALID_PARAMETER);
     ASSERTER_WITH_RET(height0 == height1 * 2, ERROR_INVALID_PARAMETER);
+    ASSERTER_WITH_RET(dst.width == width0 && dst.height == height0 && dst.stride[0] == pitch0, ERROR_INVALID_PARAMETER);
 
     trace.sub("map");
     cl::Event event;
-    void* data0 = mCommandQueue.enqueueMapImage(plane0, block, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {(cl::size_type)width0, (cl::size_type)height0, 1}, &pitch0, 0, 0, &event, &ret);
+    void* data0 = mCommandQueue.enqueueMapImage(plane0, false, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width0, height0, 1}, &pitch0, 0, 0, &event, &ret);
     ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
     mEvents.emplace_back("mapImageP0", event);
 
-    void* data1 = mCommandQueue.enqueueMapImage(plane1, block, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {(cl::size_type)width1, (cl::size_type)height1, 1}, &pitch1, 0, 0, &event, &ret);
+    void* data1 = mCommandQueue.enqueueMapImage(plane1, true, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width1, height1, 1}, &pitch1, 0, 0, &event, &ret);
     ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
     mEvents.emplace_back("mapImageP1", event);
 
     trace.sub("copy");
-    memcpy(dst.data[0], data0, pitch0 * height0);
-    memcpy(dst.data[1], data1, pitch1 * height1);
+    memcpy(dst.data[0], data0, dst.stride[0] * dst.height);
+    memcpy(dst.data[1], data1, dst.stride[1] * dst.height >> 1);
 
     trace.sub("unmap");
-    int retUnmapImage0 = mCommandQueue.enqueueUnmapMemObject(plane0, data0, 0, &event);
+    auto retUnmapImage0 = mCommandQueue.enqueueUnmapMemObject(plane0, data0, 0, &event);
     ASSERTER_WITH_INFO(retUnmapImage0 == CL_SUCCESS, retUnmapImage0, "clError: %s", clErrorInfo(retUnmapImage0).c_str());
     mEvents.emplace_back("unmapImageP0", event);
 
-    int retUnmapImage1 = mCommandQueue.enqueueUnmapMemObject(plane1, data1, 0, &event);
+    auto retUnmapImage1 = mCommandQueue.enqueueUnmapMemObject(plane1, data1, 0, &event);
     ASSERTER_WITH_INFO(retUnmapImage1 == CL_SUCCESS, retUnmapImage1, "clError: %s", clErrorInfo(retUnmapImage1).c_str());
     mEvents.emplace_back("unmapImageP1", event);
 
+    return NO_ERROR;
+}
+
+void* CLWrapper::mallocSVM(size_t sizeInByte, size_t align, cl_mem_flags flags)
+{
+    int ret = CL_SUCCESS;
+    cl_device_svm_capabilities validSVM = mDevices.front().getInfo<CL_DEVICE_SVM_CAPABILITIES>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS && (validSVM & CL_DEVICE_SVM_FINE_GRAIN_BUFFER), nullptr, "clError: %s", clErrorInfo(ret).c_str());
+
+    void* data = clSVMAlloc(mContext(), flags, sizeInByte, align);
+    ASSERTER_WITH_RET(data != nullptr, nullptr);
+
+    return data;
+}
+
+int CLWrapper::freeSVM(void* data)
+{
+    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
+    clSVMFree(mContext(), data);
+    data = nullptr;
     return NO_ERROR;
 }
 
@@ -386,6 +645,13 @@ CLWrapper& CLWrapper::setNDRange(cl::NDRange global, cl::NDRange local, cl::NDRa
     mLocal = local;
     mOffset = offset;
     return *this;
+}
+
+int CLWrapper::flush()
+{
+    int retFlush = mCommandQueue.flush();
+    ASSERTER_WITH_INFO(retFlush == CL_SUCCESS, retFlush, "clError: %s", clErrorInfo(retFlush).c_str());
+    return NO_ERROR;
 }
 
 int CLWrapper::finish()
@@ -413,6 +679,76 @@ int CLWrapper::finish()
         }
 
         mEvents.clear();
+    }
+
+    return NO_ERROR;
+}
+
+int CLWrapper::wait(const cl::Event& event)
+{
+    int retEventWait = event.wait();
+    ASSERTER_WITH_INFO(retEventWait == CL_SUCCESS, retEventWait, "clError: %s", clErrorInfo(retEventWait).c_str());
+    return NO_ERROR;
+}
+
+int CLWrapper::barrier()
+{
+    int retBarrier = mCommandQueue.enqueueBarrierWithWaitList();
+    ASSERTER_WITH_INFO(retBarrier == CL_SUCCESS, retBarrier, "clError: %s", clErrorInfo(retBarrier).c_str());
+    return NO_ERROR;
+}
+
+int CLWrapper::querySupportedImageFormats(const cl_mem_object_type object, const cl_mem_flags flags) const
+{
+    std::vector<cl::ImageFormat> formats;
+    int retGetSupportedFormats = mContext.getSupportedImageFormats(flags, CL_MEM_OBJECT_IMAGE2D, &formats);
+    ASSERTER_WITH_INFO(retGetSupportedFormats == CL_SUCCESS, retGetSupportedFormats, "clError: %s", clErrorInfo(retGetSupportedFormats).c_str());
+
+    std::set<std::string> listChannelOrder;
+    std::set<std::string> listChannelDataType;
+
+    for (const auto& format : formats) {
+        auto orderIt = mapChannelOrder.find(format.image_channel_order);
+        if (orderIt != mapChannelOrder.end()) {
+            listChannelOrder.insert(orderIt->second);
+        }
+
+        auto dataTypeIt = mapChannelDataType.find(format.image_channel_data_type);
+        if (dataTypeIt != mapChannelDataType.end()) {
+            listChannelDataType.insert(dataTypeIt->second);
+        }
+    }
+
+    LOGGER_I("OpenCL supported channel order:\n");
+    for (const auto& order : listChannelOrder) {
+        LOGGER_I("    %s\n", order.c_str());
+    }
+
+    LOGGER_I("OpenCL supported channel data type:\n");
+    for (const auto& type : listChannelDataType) {
+        LOGGER_I("    %s\n", type.c_str());
+    }
+
+    return NO_ERROR;
+}
+
+int CLWrapper::querySVMCapabilities() const
+{
+    int ret = CL_SUCCESS;
+    cl_device_svm_capabilities capsSVM = mDevices.front().getInfo<CL_DEVICE_SVM_CAPABILITIES>(&ret);
+    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+
+    if (capsSVM & CL_DEVICE_SVM_COARSE_GRAIN_BUFFER) {
+        LOGGER_I("OpenCL supported SVM type: %s\n", "CL_DEVICE_SVM_COARSE_GRAIN_BUFFER");
+    }
+    if (capsSVM & CL_DEVICE_SVM_FINE_GRAIN_BUFFER) {
+        LOGGER_I("OpenCL supported SVM type: %s\n", "CL_DEVICE_SVM_FINE_GRAIN_BUFFER");
+    }
+    if (capsSVM & CL_DEVICE_SVM_FINE_GRAIN_SYSTEM) {
+        LOGGER_I("OpenCL supported SVM type: %s\n", "CL_DEVICE_SVM_FINE_GRAIN_SYSTEM");
+    }
+    if (capsSVM & CL_DEVICE_SVM_ATOMICS) {
+        LOGGER_I("OpenCL supported SVM type: %s\n", "CL_DEVICE_SVM_ATOMICS");
     }
 
     return NO_ERROR;

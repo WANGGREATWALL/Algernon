@@ -51,6 +51,21 @@ namespace file {
         return ERROR_NOT_SUPPORTED;
     }
 
+    int XFile::loadFileToBuffer(const std::string& filename, std::string& buffer)
+    {
+        ASSERTER_WITH_RET(exists(filename), ERROR_FILE_NOT_FOUND);
+
+        std::ifstream f(filename, std::ios::binary);
+        f.seekg(0, std::ios::end);
+        auto size = f.tellg();
+
+        buffer.resize(size);
+        f.seekg(0);
+        f.read(&buffer[0], size);
+        f.close();
+
+        return NO_ERROR;
+    }
 
     int XFile::loadFileToBuffer(const std::string& filename, memory::XBuffer<char>& buffer)
     {

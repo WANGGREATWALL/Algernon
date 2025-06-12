@@ -17,6 +17,7 @@ namespace file {
 
     class XFile {
     public:
+        static int loadFileToBuffer(const std::string& filename, std::string& buffer);
         static int loadFileToBuffer(const std::string& filename, memory::XBuffer<char>& buffer);
         static int saveBufferToFile(const memory::XBuffer<char>& buffer, const std::string& filename);
         static int saveBufferToFile(const std::string& content, const std::string& filename);
