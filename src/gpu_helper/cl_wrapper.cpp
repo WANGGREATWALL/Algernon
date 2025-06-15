@@ -269,6 +269,7 @@ CLWrapper::CLWrapper(std::string folderBinary, std::string nameBinary)
 CLWrapper::~CLWrapper()
 {
     perf::TracerScoped trace("CLWrapper::~CLWrapper");
+    clearAndSyncEvents();
 }
 
 int CLWrapper::init(bool enableProfiling)
@@ -659,7 +660,25 @@ int CLWrapper::finish()
     int retFinish = mCommandQueue.finish();
     ASSERTER_WITH_INFO(retFinish == CL_SUCCESS, retFinish, "clError: %s", clErrorInfo(retFinish).c_str());
 
-    // profiling event
+    return clearAndSyncEvents();
+}
+
+int CLWrapper::wait(const cl::Event& event)
+{
+    int retEventWait = event.wait();
+    ASSERTER_WITH_INFO(retEventWait == CL_SUCCESS, retEventWait, "clError: %s", clErrorInfo(retEventWait).c_str());
+    return NO_ERROR;
+}
+
+int CLWrapper::barrier()
+{
+    int retBarrier = mCommandQueue.enqueueBarrierWithWaitList();
+    ASSERTER_WITH_INFO(retBarrier == CL_SUCCESS, retBarrier, "clError: %s", clErrorInfo(retBarrier).c_str());
+    return NO_ERROR;
+}
+
+int CLWrapper::clearAndSyncEvents()
+{
     if (mEnableProfiling) {
         int ret = CL_SUCCESS;
         for (const auto& e : mEvents) {
@@ -677,24 +696,9 @@ int CLWrapper::finish()
 
             LOGGER_I("cl profiling => (enqueue)%.3f, (:submit)%.3f, (:start)%.3f, (:end)%.3f ms => [%s]\n", enqueue, (submit - enqueue), (start - submit), (end - start), e.name.c_str());
         }
-
-        mEvents.clear();
     }
+    mEvents.clear();
 
-    return NO_ERROR;
-}
-
-int CLWrapper::wait(const cl::Event& event)
-{
-    int retEventWait = event.wait();
-    ASSERTER_WITH_INFO(retEventWait == CL_SUCCESS, retEventWait, "clError: %s", clErrorInfo(retEventWait).c_str());
-    return NO_ERROR;
-}
-
-int CLWrapper::barrier()
-{
-    int retBarrier = mCommandQueue.enqueueBarrierWithWaitList();
-    ASSERTER_WITH_INFO(retBarrier == CL_SUCCESS, retBarrier, "clError: %s", clErrorInfo(retBarrier).c_str());
     return NO_ERROR;
 }
 

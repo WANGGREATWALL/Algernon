@@ -129,6 +129,8 @@ public:
     int wait(const cl::Event& event);
     int barrier();
 
+    int clearAndSyncEvents();
+
     int querySupportedImageFormats(const cl_mem_object_type object=CL_MEM_OBJECT_IMAGE2D, const cl_mem_flags flags=CL_MEM_READ_ONLY) const;
     int querySVMCapabilities() const;
 
