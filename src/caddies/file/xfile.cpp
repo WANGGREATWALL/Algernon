@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "xregex.h"
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -22,7 +22,7 @@ namespace file {
 
     bool isDirectory(const std::string& dir)
     {
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
         struct stat path_stat;
         if (stat(dir.c_str(), &path_stat) == -1) {
             return false;
@@ -36,7 +36,7 @@ namespace file {
 
     int createDirectory(const std::string& dir)
     {
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
         mode_t mode = 0755; // permission setting
         if (mkdir(dir.c_str(), mode) == 0) {
             return NO_ERROR;
@@ -114,7 +114,7 @@ namespace file {
     std::vector<std::string> XFilelistMaker::getFullListIn(const std::string& folder)
     {
         std::vector<std::string> list;
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
         DIR* dir;
         struct dirent* ent;
 

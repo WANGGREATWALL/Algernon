@@ -20,7 +20,17 @@
 #undef NDEBUG
 // #define NDEBUG
 #include <cassert>
+#ifndef __APPLE__
 #include <error.h>
+#else
+#define NO_ERROR (0)
+#define ERROR_FILE_NOT_FOUND (2)
+#define ERROR_OPEN_FAILED (3)
+#define ERROR_INVALID_PARAMETER (87)
+#define ERROR_NOT_SUPPORTED (50)
+#define ERROR_BAD_FORMAT (11)
+#define ERROR_INVALID_HANDLE (6)
+#endif
 
 #ifndef TAG_LOGGER
 #define TAG_LOGGER "[unnamed]"

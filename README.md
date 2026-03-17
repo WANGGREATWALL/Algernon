@@ -4,7 +4,15 @@
 - C++ 工具仓;
 
 ## 1 编译
-- `GCC 8.1.0 x86_64-w64-mingw32`;
+- windows 平台使用编译器 `GCC 8.1.0 x86_64-w64-mingw32`;
+- 使用 cmake 编译:
+    ```bash
+    mkdir -p build && cd build
+    cmake ..
+    make
+    ./src/test
+    ```
+
 
 ## 2 todo
 - [x] caddies

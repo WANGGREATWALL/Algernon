@@ -8,6 +8,14 @@
 #include "log/logger.h"
 #include "ext/xdll_parser.h"
 
+#ifdef __APPLE__
+#undef CL_TARGET_OPENCL_VERSION
+#define CL_TARGET_OPENCL_VERSION 120
+#undef CL_HPP_TARGET_OPENCL_VERSION
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#undef CL_HPP_MINIMUM_OPENCL_VERSION
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#else
 #ifndef CL_TARGET_OPENCL_VERSION
 #define CL_TARGET_OPENCL_VERSION 200
 #endif
@@ -16,6 +24,7 @@
 #endif
 #ifndef CL_HPP_MINIMUM_OPENCL_VERSION
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#endif
 #endif
 #include "CL/opencl.hpp"
 
@@ -117,9 +126,11 @@ public:
         return mParser->call<decltype(clReleaseCommandQueue)>("clReleaseCommandQueue", command_queue);
     }
 
+#ifndef __APPLE__
     cl_command_queue proxy_clCreateCommandQueueWithProperties(cl_context context, cl_device_id device, const cl_queue_properties *properties, cl_int *errcode_ret) {
         return mParser->call<decltype(clCreateCommandQueueWithProperties)>("clCreateCommandQueueWithProperties", context, device, properties, errcode_ret);
     }
+#endif
 
     cl_int proxy_clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t *global_work_offset, const size_t *global_work_size, const size_t *local_work_size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
         return mParser->call<decltype(clEnqueueNDRangeKernel)>("clEnqueueNDRangeKernel", command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
@@ -159,6 +170,7 @@ public:
         return mParser->call<decltype(clCreateImage)>("clCreateImage", context, flags, image_format, image_desc, host_ptr, errcode_ret);
     }
 
+#ifndef __APPLE__
     void* proxy_clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment) {
         return mParser->call<decltype(clSVMAlloc)>("clSVMAlloc", context, flags, size, alignment);
     }
@@ -174,6 +186,7 @@ public:
     cl_mem proxy_clCreatePipe(cl_context context, cl_mem_flags flags, cl_uint pipe_packet_size, cl_uint pipe_max_packets, const cl_pipe_properties * properties, cl_int *errcode_ret) {
         return mParser->call<decltype(clCreatePipe)>("clCreatePipe", context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
     }
+#endif
 
     void* proxy_clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_map, cl_map_flags map_flags, size_t offset, size_t size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event, cl_int *errcode_ret) {
         return mParser->call<decltype(clEnqueueMapBuffer)>("clEnqueueMapBuffer", command_queue, buffer, blocking_map, map_flags, offset, size, num_events_in_wait_list, event_wait_list, event, errcode_ret);
@@ -193,9 +206,11 @@ public:
 
     // kernel
     // ==============================
+#ifndef __APPLE__
     cl_int proxy_clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint arg_index, const void *arg_value) {
         return mParser->call<decltype(clSetKernelArgSVMPointer)>("clSetKernelArgSVMPointer", kernel, arg_index, arg_value);
     }
+#endif
 
     cl_int proxy_clReleaseKernel(cl_kernel kernel) {
         return mParser->call<decltype(clReleaseKernel)>("clReleaseKernel", kernel);
@@ -209,9 +224,11 @@ public:
         return mParser->call<decltype(clCreateKernel)>("clCreateKernel", program, kernel_name, errcode_ret);
     }
 
+#ifndef __APPLE__
     cl_int proxy_clSetKernelExecInfo(cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void *param_value) {
         return mParser->call<decltype(clSetKernelExecInfo)>("clSetKernelExecInfo", kernel, param_name, param_value_size, param_value);
     }
+#endif
 
     cl_int proxy_clGetKernelInfo(cl_kernel kernel, cl_kernel_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
         return mParser->call<decltype(clGetKernelInfo)>("clGetKernelInfo", kernel, param_name, param_value_size, param_value, param_value_size_ret);

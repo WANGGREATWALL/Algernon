@@ -21,14 +21,20 @@ target_include_directories(test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src
 )
 
-file(GLOB_RECURSE sources 
-    # ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+if(NOT APPLE)
+    file(GLOB_RECURSE gpu_sources 
+        ${CMAKE_CURRENT_SOURCE_DIR}/gpu_helper/*.cpp 
+    )
+    list(APPEND sources ${gpu_sources})
+endif()
+
+file(GLOB_RECURSE other_sources 
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/**/*.c 
     ${CMAKE_CURRENT_SOURCE_DIR}/caddies/**/*.cpp 
-    ${CMAKE_CURRENT_SOURCE_DIR}/gpu_helper/*.cpp 
     ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/*.cpp 
     ${CMAKE_CURRENT_SOURCE_DIR}/run/*.cpp
 )
+list(APPEND sources ${other_sources})
 
 target_sources(test PRIVATE ${sources})
 
