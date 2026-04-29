@@ -1,12 +1,13 @@
-#ifndef __CL_SYMBOLS_H__
-#define __CL_SYMBOLS_H__
+#ifndef CL_SYMBOLS_H_
+#define CL_SYMBOLS_H_
 
 #include <vector>
 #include <string>
-#include <memory>
 
-#include "log/logger.h"
-#include "ext/xdll_parser.h"
+#include "algernon/log/xlogger.h"
+#include "algernon/sys/xdlib.h"
+
+using algernon::sys::XDLib;
 
 #ifdef __APPLE__
 #undef CL_TARGET_OPENCL_VERSION
@@ -31,254 +32,30 @@
 
 namespace gpu {
 
+/**
+ * @brief Singleton that holds the dynamically loaded OpenCL library.
+ *
+ * Usage in trampoline functions (cl_symbols.cpp):
+ *   return XDLIB_GET(gpu::CLSymbols::lib(), clSomeFunc)(args...);
+ */
 class CLSymbols {
 public:
-    static CLSymbols& get() {
+    static algernon::sys::XDLib& lib() {
         static CLSymbols instance;
-        return instance;
+        return instance.mLib;
     }
+
     ~CLSymbols() = default;
-
-    // platform
-    // ==============================
-    cl_int proxy_clGetPlatformIDs(cl_uint num_entries, cl_platform_id* platforms, cl_uint* num_platforms) {
-        return mParser->call<decltype(clGetPlatformIDs)>("clGetPlatformIDs", num_entries, platforms, num_platforms);
-    }
-
-    cl_int proxy_clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetPlatformInfo)>("clGetPlatformInfo", platform, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    // device
-    // ==============================
-    cl_int proxy_clRetainDevice(cl_device_id device) {
-        return mParser->call<decltype(clRetainDevice)>("clRetainDevice", device);
-    }
-
-    cl_int proxy_clReleaseDevice(cl_device_id device) {
-        return mParser->call<decltype(clReleaseDevice)>("clReleaseDevice", device);
-    }
-
-    cl_int proxy_clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_uint num_entries, cl_device_id *devices, cl_uint *num_devices) {
-        return mParser->call<decltype(clGetDeviceIDs)>("clGetDeviceIDs", platform, device_type, num_entries, devices, num_devices);
-    }
-
-    cl_int proxy_clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetDeviceInfo)>("clGetDeviceInfo", device, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    // context
-    // ==============================
-    cl_int proxy_clRetainContext(cl_context context) {
-        return mParser->call<decltype(clRetainContext)>("clRetainContext", context);
-    }
-
-    cl_int proxy_clReleaseContext(cl_context context) {
-        return mParser->call<decltype(clReleaseContext)>("clReleaseContext", context);
-    }
-
-    cl_context proxy_clCreateContextFromType(const cl_context_properties *properties, cl_device_type device_type, void (CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateContextFromType)>("clCreateContextFromType", properties, device_type, pfn_notify, user_data, errcode_ret);
-    }
-
-    cl_int proxy_clGetContextInfo(cl_context context, cl_context_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetContextInfo)>("clGetContextInfo", context, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    cl_context proxy_clCreateContext(const cl_context_properties *properties, cl_uint num_devices, const cl_device_id *devices, void(CL_CALLBACK *pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data), void *user_data, cl_int *errcode_ret)
-    {
-        return mParser->call<decltype(clCreateContext)>("clCreateContext", properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
-    }
-
-    // program
-    // ==============================
-    cl_int proxy_clReleaseProgram(cl_program program) {
-        return mParser->call<decltype(clReleaseProgram)>("clReleaseProgram", program);
-    }
-
-    cl_program proxy_clCreateProgramWithSource(cl_context context, cl_uint count, const char **strings, const size_t *lengths, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateProgramWithSource)>("clCreateProgramWithSource", context, count, strings, lengths, errcode_ret);
-    }
-
-    cl_int proxy_clBuildProgram(cl_program program, cl_uint num_devices, const cl_device_id *device_list, const char *options, void (CL_CALLBACK *pfn_notify)(cl_program program, void *user_data), void *user_data) {
-        return mParser->call<decltype(clBuildProgram)>("clBuildProgram", program, num_devices, device_list, options, pfn_notify, user_data);
-    }
-
-    cl_int proxy_clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetProgramInfo)>("clGetProgramInfo", program, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    cl_int proxy_clGetProgramBuildInfo(cl_program program, cl_device_id device, cl_program_build_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetProgramBuildInfo)>("clGetProgramBuildInfo", program, device, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    cl_program proxy_clCreateProgramWithBinary(cl_context context, cl_uint num_devices, const cl_device_id *device_list, const size_t *lengths, const unsigned char **binaries, cl_int *binary_status, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateProgramWithBinary)>("clCreateProgramWithBinary", context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
-    }
-
-    // command queue
-    // ==============================
-    cl_int proxy_clRetainCommandQueue(cl_command_queue command_queue) {
-        return mParser->call<decltype(clRetainCommandQueue)>("clRetainCommandQueue", command_queue);
-    }
-
-    cl_int proxy_clReleaseCommandQueue(cl_command_queue command_queue) {
-        return mParser->call<decltype(clReleaseCommandQueue)>("clReleaseCommandQueue", command_queue);
-    }
-
-#ifndef __APPLE__
-    cl_command_queue proxy_clCreateCommandQueueWithProperties(cl_context context, cl_device_id device, const cl_queue_properties *properties, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateCommandQueueWithProperties)>("clCreateCommandQueueWithProperties", context, device, properties, errcode_ret);
-    }
-#endif
-
-    cl_int proxy_clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim, const size_t *global_work_offset, const size_t *global_work_size, const size_t *local_work_size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-        return mParser->call<decltype(clEnqueueNDRangeKernel)>("clEnqueueNDRangeKernel", command_queue, kernel, work_dim, global_work_offset, global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
-    }
-
-    cl_int proxy_clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t *origin, const size_t *region, size_t row_pitch, size_t slice_pitch, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-        return mParser->call<decltype(clEnqueueReadImage)>("clEnqueueReadImage", command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-    }
-
-    cl_int proxy_clEnqueueCopyImage(cl_command_queue command_queue, cl_mem src_image, cl_mem dst_image, const size_t *src_origin, const size_t *dst_origin, const size_t *region, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-        return mParser->call<decltype(clEnqueueCopyImage)>("clEnqueueCopyImage", command_queue, src_image, dst_image, src_origin, dst_origin, region, num_events_in_wait_list, event_wait_list, event);
-    }
-
-    void* proxy_clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_map, cl_map_flags map_flags, const size_t *origin, const size_t *region, size_t *image_row_pitch, size_t *image_slice_pitch, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event, cl_int *errcode_ret) {
-        return mParser->call<decltype(clEnqueueMapImage)>("clEnqueueMapImage", command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
-    }
-
-    cl_int proxy_clEnqueueBarrierWithWaitList(cl_command_queue command_queue, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-        return mParser->call<decltype(clEnqueueBarrierWithWaitList)>("clEnqueueBarrierWithWaitList", command_queue, num_events_in_wait_list, event_wait_list, event);
-    }
-
-    // mem object
-    // ==============================
-    cl_int proxy_clRetainMemObject(cl_mem memobj) {
-        return mParser->call<decltype(clRetainMemObject)>("clRetainMemObject", memobj);
-    }
-
-    cl_int proxy_clReleaseMemObject(cl_mem memobj) {
-        return mParser->call<decltype(clReleaseMemObject)>("clReleaseMemObject", memobj);
-    }
-
-    cl_mem proxy_clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void *host_ptr, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateBuffer)>("clCreateBuffer", context, flags, size, host_ptr, errcode_ret);
-    }
-
-    cl_mem proxy_clCreateImage(cl_context context, cl_mem_flags flags, const cl_image_format *image_format, const cl_image_desc *image_desc, void *host_ptr, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateImage)>("clCreateImage", context, flags, image_format, image_desc, host_ptr, errcode_ret);
-    }
-
-#ifndef __APPLE__
-    void* proxy_clSVMAlloc(cl_context context, cl_svm_mem_flags flags, size_t size, cl_uint alignment) {
-        return mParser->call<decltype(clSVMAlloc)>("clSVMAlloc", context, flags, size, alignment);
-    }
-
-    void proxy_clSVMFree(cl_context context, void *svm_pointer) {
-        return mParser->call<decltype(clSVMFree)>("clSVMFree", context, svm_pointer);
-    }
-
-    cl_int proxy_clEnqueueSVMMap(cl_command_queue command_queue, cl_bool blocking_map, cl_map_flags map_flags, void *svm_ptr, size_t size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-        return mParser->call<decltype(clEnqueueSVMMap)>("clEnqueueSVMMap", command_queue, blocking_map, map_flags, svm_ptr, size, num_events_in_wait_list, event_wait_list, event);
-    }
-
-    cl_mem proxy_clCreatePipe(cl_context context, cl_mem_flags flags, cl_uint pipe_packet_size, cl_uint pipe_max_packets, const cl_pipe_properties * properties, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreatePipe)>("clCreatePipe", context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
-    }
-#endif
-
-    void* proxy_clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_map, cl_map_flags map_flags, size_t offset, size_t size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event, cl_int *errcode_ret) {
-        return mParser->call<decltype(clEnqueueMapBuffer)>("clEnqueueMapBuffer", command_queue, buffer, blocking_map, map_flags, offset, size, num_events_in_wait_list, event_wait_list, event, errcode_ret);
-    }
-
-    cl_int proxy_clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, void *mapped_ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-        return mParser->call<decltype(clEnqueueUnmapMemObject)>("clEnqueueUnmapMemObject", command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
-    }
-
-    cl_int proxy_clGetSupportedImageFormats(cl_context context, cl_mem_flags flags, cl_mem_object_type image_type, cl_uint num_entries, cl_image_format *image_formats, cl_uint *num_image_formats) {
-        return mParser->call<decltype(clGetSupportedImageFormats)>("clGetSupportedImageFormats", context, flags, image_type, num_entries, image_formats, num_image_formats);
-    }
-
-    cl_int proxy_clGetImageInfo(cl_mem image, cl_image_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetImageInfo)>("clGetImageInfo", image, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    // kernel
-    // ==============================
-#ifndef __APPLE__
-    cl_int proxy_clSetKernelArgSVMPointer(cl_kernel kernel, cl_uint arg_index, const void *arg_value) {
-        return mParser->call<decltype(clSetKernelArgSVMPointer)>("clSetKernelArgSVMPointer", kernel, arg_index, arg_value);
-    }
-#endif
-
-    cl_int proxy_clReleaseKernel(cl_kernel kernel) {
-        return mParser->call<decltype(clReleaseKernel)>("clReleaseKernel", kernel);
-    }
-
-    cl_int proxy_clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value) {
-        return mParser->call<decltype(clSetKernelArg)>("clSetKernelArg", kernel, arg_index, arg_size, arg_value);
-    }
-
-    cl_kernel proxy_clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret) {
-        return mParser->call<decltype(clCreateKernel)>("clCreateKernel", program, kernel_name, errcode_ret);
-    }
-
-#ifndef __APPLE__
-    cl_int proxy_clSetKernelExecInfo(cl_kernel kernel, cl_kernel_exec_info param_name, size_t param_value_size, const void *param_value) {
-        return mParser->call<decltype(clSetKernelExecInfo)>("clSetKernelExecInfo", kernel, param_name, param_value_size, param_value);
-    }
-#endif
-
-    cl_int proxy_clGetKernelInfo(cl_kernel kernel, cl_kernel_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetKernelInfo)>("clGetKernelInfo", kernel, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    cl_int proxy_clRetainKernel(cl_kernel kernel) {
-        return mParser->call<decltype(clRetainKernel)>("clRetainKernel", kernel);
-    }
-
-    cl_int  proxy_clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kernel *kernels, cl_uint *num_kernels_ret) {
-        return mParser->call<decltype(clCreateKernelsInProgram)>("clCreateKernelsInProgram", program, num_kernels, kernels, num_kernels_ret);
-    }
-
-    // event
-    // ==============================
-    cl_int proxy_clReleaseEvent(cl_event event) {
-        return mParser->call<decltype(clReleaseEvent)>("clReleaseEvent", event);
-    }
-
-    cl_int proxy_clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
-        return mParser->call<decltype(clWaitForEvents)>("clWaitForEvents", num_events, event_list);
-    }
-
-    cl_int proxy_clRetainEvent(cl_event event) {
-        return mParser->call<decltype(clRetainEvent)>("clRetainEvent", event);
-    }
-
-    cl_int proxy_clGetEventProfilingInfo(cl_event event, cl_profiling_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-        return mParser->call<decltype(clGetEventProfilingInfo)>("clGetEventProfilingInfo", event, param_name, param_value_size, param_value, param_value_size_ret);
-    }
-
-    cl_int proxy_clFlush(cl_command_queue command_queue) {
-        return mParser->call<decltype(clFlush)>("clFlush", command_queue);
-    }
-
-    cl_int proxy_clFinish(cl_command_queue command_queue) {
-        return mParser->call<decltype(clFinish)>("clFinish", command_queue);
-    }
 
 private:
     CLSymbols() {
-        mParser.reset(new XDLLParser);
-        int retLoadCLLib = mParser->load(mListLibPath);
-        ASSERTER(retLoadCLLib == NO_ERROR);
+        int ret = mLib.load(mLibPaths);
+        XASSERT(ret == algernon::kSuccess);
     }
 
-private:
-    std::unique_ptr<XDLLParser> mParser;
+    algernon::sys::XDLib mLib;
 
-    std::vector<std::string> mListLibPath = {
+    std::vector<std::string> mLibPaths = {
         "/vendor/lib64/libOpenCL.so",
 
         // __aarch64__
@@ -308,4 +85,4 @@ private:
 
 } // namespace gpu
 
-#endif // __CL_SYMBOLS_H__
+#endif // CL_SYMBOLS_H_

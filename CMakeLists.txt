@@ -1,51 +1,110 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 
-#
-# Building in-tree is not allowed (we take care of your craziness).
-#
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-    message(FATAL_ERROR "Prevented in-tree built. Please create a build directory outside of the source code and call cmake from there. Thank you.")
-endif()
+# ============================================================================
+# Version (update here; triggers re-configure)
+# ============================================================================
+set(ALGERNON_VERSION_MAJOR 1)
+set(ALGERNON_VERSION_MINOR 0)
+set(ALGERNON_VERSION_PATCH 0)
+set(ALGERNON_VERSION "${ALGERNON_VERSION_MAJOR}.${ALGERNON_VERSION_MINOR}.${ALGERNON_VERSION_PATCH}")
 
-#
-# Project configuration
-#
-file(STRINGS "version.mk" VERSION_CONTENTS)
-set(REGEX_MAJOR "ALGERNON_VERSION_MAJOR *:= *([0-9]+)")
-set(REGEX_MINOR "ALGERNON_VERSION_MINOR *:= *([0-9]+)")
-set(REGEX_REVISION "ALGERNON_VERSION_REVISION *:= *([0-9]+)")
-string(REGEX MATCH "${REGEX_MAJOR}" _ ${VERSION_CONTENTS})
-set(ALGERNON_VERSION_MAJOR ${CMAKE_MATCH_1})
-string(REGEX MATCH "${REGEX_MINOR}" _ ${VERSION_CONTENTS})
-set(ALGERNON_VERSION_MINOR ${CMAKE_MATCH_1})
-string(REGEX MATCH "${REGEX_REVISION}" _ ${VERSION_CONTENTS})
-set(ALGERNON_VERSION_REVISION ${CMAKE_MATCH_1})
+project(Algernon VERSION ${ALGERNON_VERSION} LANGUAGES C CXX)
 
-set(ALGERNON_VERSION ${ALGERNON_VERSION_MAJOR}.${ALGERNON_VERSION_MINOR}.${ALGERNON_VERSION_REVISION})
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+message(STATUS "***********************************************************")
+message(STATUS "*")
+message(STATUS "* Algernon v${ALGERNON_VERSION} (${CMAKE_BUILD_TYPE})")
+message(STATUS "* Copyright (c) 2020-2026 WANGGREATWALL")
+message(STATUS "*")
+message(STATUS "***********************************************************")
 
-#
-# Set install prefix
-#
-#set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "")
-
-project(
-    Algernon
-    VERSION ${ALGERNON_VERSION}
-    LANGUAGES C CXX
+# ============================================================================
+# Generate version.h
+# ============================================================================
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/algernon/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/inc/algernon/version.h
+    @ONLY
 )
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+# ============================================================================
+# Include directories
+# ============================================================================
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    ${CMAKE_CURRENT_BINARY_DIR}/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON
+)
+
+# ============================================================================
+# Source files
+# ============================================================================
+set(ALGERNON_SOURCES
+    src/sys/xdlib.cpp
+    src/sys/xplatform.cpp
+    src/file/xpath.cpp
+    src/file/xfile.cpp
+    src/regex/xregex.cpp
+    src/json/xjson.cpp
+    src/cv/ximage.cpp
+    src/perf/xtimer.cpp
+    src/perf/xtracer.cpp
+    src/util/xargs.cpp
+    third_party/cJSON/cJSON.c
+)
+
+# ============================================================================
+# Library
+# ============================================================================
+add_library(algernon STATIC ${ALGERNON_SOURCES})
+target_include_directories(algernon PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    ${CMAKE_CURRENT_BINARY_DIR}/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON
+)
+
+# ============================================================================
+# Tests
+# ============================================================================
+set(GTEST_SOURCES
+    third_party/gtest/src/gtest-assertion-result.cpp
+    third_party/gtest/src/gtest-death-test.cpp
+    third_party/gtest/src/gtest-filepath.cpp
+    third_party/gtest/src/gtest-matchers.cpp
+    third_party/gtest/src/gtest-port.cpp
+    third_party/gtest/src/gtest-printers.cpp
+    third_party/gtest/src/gtest-test-part.cpp
+    third_party/gtest/src/gtest-typed-test.cpp
+    third_party/gtest/src/gtest.cpp
+)
+
+add_executable(algernon_test
+    test/main.cpp
+    test/test_xmath.cpp
+    test/test_xbuffer.cpp
+    test/test_xregex.cpp
+    test/test_xargs.cpp
+    test/test_xpath.cpp
+    test/test_xtimer.cpp
+    test/test_xplatform.cpp
+    ${GTEST_SOURCES}
+)
+
+target_include_directories(algernon_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest/include
+)
+
+target_link_libraries(algernon_test PRIVATE algernon)
+
+# Platform-specific link libraries
+if(UNIX AND NOT APPLE)
+    target_link_libraries(algernon PRIVATE dl pthread)
+    target_link_libraries(algernon_test PRIVATE pthread)
 endif()
-
-set(ALGERNON_BUILD_LIB_TYPE STATIC)
-
-message("***********************************************************")
-message("*")
-message("* ${PROJECT_NAME} v${PROJECT_VERSION} (${CMAKE_BUILD_TYPE})")
-message("* Copyright (c) 2020-2025 WANGGREATWALL")
-message("*")
-message("***********************************************************")
-
-add_subdirectory(src)
+if(APPLE)
+    target_link_libraries(algernon PRIVATE dl)
+endif()

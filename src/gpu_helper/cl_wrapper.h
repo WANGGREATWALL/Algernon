@@ -17,7 +17,9 @@
 #include <map>
 
 #include "cl_symbols.h"
-#include "cv/ximage.h"
+#include "algernon/cv/ximage.h"
+
+using algernon::cv::Image;
 
 
 namespace gpu {
@@ -87,27 +89,27 @@ public:
     int enqueue(std::string nameKernel, cl::Event* event=nullptr, Args... args) {
         cl::Kernel kernel;
         int retGetKernel = getKernel(kernel, nameKernel);
-        ASSERTER_WITH_RET(retGetKernel == NO_ERROR, retGetKernel);
+        XASSERT_RET(retGetKernel == algernon::kSuccess, retGetKernel);
 
         int idx = 0;
         std::vector<int> setargs{ [&] { return kernel.setArg(idx++, args); }()... };
 
         for (int i = 0; i < setargs.size(); ++i) {
-            ASSERTER_WITH_INFO(setargs[i] == CL_SUCCESS, ERROR_INVALID_PARAMETER, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
+            XASSERT_INFO(setargs[i] == CL_SUCCESS, algernon::kErrorInvalidParam, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
         }
 
         if (event) {
             int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, event);
-            ASSERTER_WITH_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
+            XASSERT_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
             mEvents.emplace_back(nameKernel, *event);
         } else {
             cl::Event eventInner;
             int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, &eventInner);
-            ASSERTER_WITH_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
+            XASSERT_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
             mEvents.emplace_back(nameKernel, eventInner);
         }
         
-        return NO_ERROR;
+        return algernon::kSuccess;
     }
 
     /**

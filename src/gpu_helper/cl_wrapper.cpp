@@ -132,7 +132,7 @@ int getChannelBitWidth(const cl_channel_type& typeChannel)
 int convertCLImageFormat2NTIFormat(const cl_image_format& fmtCL, int& fmtCV)
 {
     int bit = getChannelBitWidth(fmtCL.image_channel_data_type);
-    ASSERTER_WITH_RET(bit > 0, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(bit > 0, algernon::kErrorInvalidParam);
 
     if (fmtCL.image_channel_order == CL_R) {
         switch (bit) {
@@ -164,14 +164,14 @@ int convertCLImageFormat2NTIFormat(const cl_image_format& fmtCL, int& fmtCV)
         return ERROR_UNSUPPORTED_TYPE;
     }
     
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 size_t getImageWidth(const cl::Image& image)
 {
     int ret = CL_SUCCESS;
     cl::size_type width = image.getImageInfo<CL_IMAGE_WIDTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
 
     return width;
 }
@@ -180,7 +180,7 @@ size_t getImageHeight(const cl::Image& image)
 {
     int ret = CL_SUCCESS;
     cl::size_type height = image.getImageInfo<CL_IMAGE_HEIGHT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
 
     return height;
 }
@@ -189,7 +189,7 @@ size_t getImagePitch(const cl::Image& image)
 {
     cl_int ret = CL_SUCCESS;
     cl::size_type pitch = image.getImageInfo<CL_IMAGE_ROW_PITCH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
 
     return pitch;
 }
@@ -198,7 +198,7 @@ size_t getImageDepth(const cl::Image& image)
 {
     cl_int ret = CL_SUCCESS;
     cl::size_type depth = image.getImageInfo<CL_IMAGE_DEPTH>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, 0, "clError: %s", clErrorInfo(ret).c_str());
 
     return depth;
 }
@@ -212,7 +212,7 @@ bool isFormat(const cl::Image& image, const cl_image_format& format)
 {
     int ret = CL_SUCCESS;
     cl_image_format fmt = image.getImageInfo<CL_IMAGE_FORMAT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
 
     return fmt.image_channel_order == format.image_channel_order && fmt.image_channel_data_type == format.image_channel_data_type;
 }
@@ -233,10 +233,10 @@ bool isSameFormat(const cl::Image& image0, const cl::Image& image1)
 {
     int ret = CL_SUCCESS;
     cl_image_format fmt0 = image0.getImageInfo<CL_IMAGE_FORMAT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
 
     cl_image_format fmt1 = image1.getImageInfo<CL_IMAGE_FORMAT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, false, "clError: %s", clErrorInfo(ret).c_str());
 
     return fmt0.image_channel_order == fmt1.image_channel_order && fmt0.image_channel_data_type == fmt1.image_channel_data_type;
 }
@@ -252,7 +252,7 @@ std::string info(const cl::Image& image)
 
     int ret = CL_SUCCESS;
     cl_image_format fmt = image.getImageInfo<CL_IMAGE_FORMAT>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, "unknown", "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, "unknown", "clError: %s", clErrorInfo(ret).c_str());
 
     snprintf(str, 256, "[%zux%zux%zu], fmt:{%s, %s}", getImageWidth(image), getImageHeight(image), getImageDepth(image),
         mapChannelOrder[fmt.image_channel_order].c_str(), mapChannelDataType[fmt.image_channel_data_type].c_str());
@@ -276,57 +276,57 @@ int CLWrapper::init(bool enableProfiling)
 {
     perf::TracerScoped trace("CLWrapper::init");
 
-    ASSERTER_WITH_RET(!mFolderBinary.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(file::isDirectory(mFolderBinary), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mNameBinaryWithoutFormat.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mFolderBinary.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(file::isDirectory(mFolderBinary), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mNameBinaryWithoutFormat.empty(), algernon::kErrorInvalidParam);
     
     int retGetPlatform = getPlatform();
-    ASSERTER_WITH_INFO(retGetPlatform == CL_SUCCESS, retGetPlatform, "clError: %s", clErrorInfo(retGetPlatform).c_str());
+    XASSERT_INFO(retGetPlatform == CL_SUCCESS, retGetPlatform, "clError: %s", clErrorInfo(retGetPlatform).c_str());
     
     int retGetDevice = getDevice();
-    ASSERTER_WITH_INFO(retGetDevice == CL_SUCCESS, retGetDevice, "clError: %s", clErrorInfo(retGetDevice).c_str());
+    XASSERT_INFO(retGetDevice == CL_SUCCESS, retGetDevice, "clError: %s", clErrorInfo(retGetDevice).c_str());
 
     int retCreateContext = createContext();
-    ASSERTER_WITH_INFO(retCreateContext == CL_SUCCESS, retCreateContext, "clError: %s", clErrorInfo(retCreateContext).c_str());
+    XASSERT_INFO(retCreateContext == CL_SUCCESS, retCreateContext, "clError: %s", clErrorInfo(retCreateContext).c_str());
 
     int retCreateCommandQueue = createCommandQueue((mEnableProfiling = enableProfiling) ? CL_QUEUE_PROFILING_ENABLE : 0);
-    ASSERTER_WITH_INFO(retCreateCommandQueue == CL_SUCCESS, retCreateCommandQueue, "clError: %s", clErrorInfo(retCreateCommandQueue).c_str());
+    XASSERT_INFO(retCreateCommandQueue == CL_SUCCESS, retCreateCommandQueue, "clError: %s", clErrorInfo(retCreateCommandQueue).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::build(const std::string& kernelString, const std::string optionsCompile)
 {
     perf::TracerScoped trace("CLWrapper::build");
     
-    ASSERTER_WITH_RET(!kernelString.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!optionsCompile.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mFolderBinary.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(file::isDirectory(mFolderBinary), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mNameBinaryWithoutFormat.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!kernelString.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(!optionsCompile.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mFolderBinary.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(file::isDirectory(mFolderBinary), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mNameBinaryWithoutFormat.empty(), algernon::kErrorInvalidParam);
     
     mStringKernel = kernelString;
 
     bool isBinAvailable = false;
-    if (loadCheckKey(mKeyLoaded) == NO_ERROR) {
+    if (loadCheckKey(mKeyLoaded) == algernon::kSuccess) {
         checkLoadKey(mKeyLoaded, isBinAvailable);
     }
 
     if (isBinAvailable) {
         int retBuildProgram = buildProgram(optionsCompile);
-        ASSERTER_WITH_RET(retBuildProgram == CL_SUCCESS, retBuildProgram);
+        XASSERT_RET(retBuildProgram == CL_SUCCESS, retBuildProgram);
     } else {
         int retCreateProgram = createProgramWithKernelString(mStringKernel);
-        ASSERTER_WITH_RET(retCreateProgram == CL_SUCCESS, retCreateProgram);
+        XASSERT_RET(retCreateProgram == CL_SUCCESS, retCreateProgram);
 
         int retBuildProgram = buildProgram(optionsCompile);
-        ASSERTER_WITH_RET(retBuildProgram == CL_SUCCESS, retBuildProgram);
+        XASSERT_RET(retBuildProgram == CL_SUCCESS, retBuildProgram);
 
         int retSaveBinAndKey = storeBinAndKey();
-        ASSERTER_WITH_RET(retSaveBinAndKey == NO_ERROR, retSaveBinAndKey);
+        XASSERT_RET(retSaveBinAndKey == algernon::kSuccess, retSaveBinAndKey);
     }
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createKernels()
@@ -335,24 +335,24 @@ int CLWrapper::createKernels()
 
     std::vector<cl::Kernel> kernels;
     int retCreateKernels = mProgram.createKernels(&kernels);
-    ASSERTER_WITH_INFO(retCreateKernels == CL_SUCCESS, retCreateKernels, "clError: %s", clErrorInfo(retCreateKernels).c_str());
+    XASSERT_INFO(retCreateKernels == CL_SUCCESS, retCreateKernels, "clError: %s", clErrorInfo(retCreateKernels).c_str());
 
     mKernels.clear();
     for (auto i = kernels.cbegin(); i != kernels.cend(); ++i) {
         int ret = CL_SUCCESS;
         std::string name = i->getInfo<CL_KERNEL_FUNCTION_NAME>(&ret);
-        ASSERTER_WITH_RET(ret == CL_SUCCESS, ret);
+        XASSERT_RET(ret == CL_SUCCESS, ret);
 
         mKernels[name] = *i;
     }
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createBuffer(cl::Buffer& dst, const cv::Image& image, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(cv::isValid(image), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(cv::isFormatIn(image, {
+    XASSERT_RET(cv::isValid(image), algernon::kErrorInvalidParam);
+    XASSERT_RET(cv::isFormatIn(image, {
         cv::kXFormatGrayU8,
         cv::kXFormatGrayU16,
         cv::kXFormatGrayU32,
@@ -363,60 +363,60 @@ int CLWrapper::createBuffer(cl::Buffer& dst, const cv::Image& image, cl_mem_flag
 
     int ret = CL_SUCCESS;
     dst = cl::Buffer(mContext, flags, image.height * image.stride[0], image.data[0], &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createBuffer(cl::Buffer& dst, void* data, size_t sizeInByte, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(data != nullptr, algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     dst = cl::Buffer(mContext, flags, sizeInByte, data, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createImage2D(cl::Image2D& dst, const cv::Image& image, cl::ImageFormat format, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(cv::isValid(image), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(cv::isValid(image), algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     dst = cl::Image2D(mContext, flags, format, image.width, image.height, image.stride[0], image.data[0], &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createImage2D(cl::Image2D& dst, void* data, int width, int height, cl::ImageFormat format, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(width > 0 && height > 0, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(data != nullptr, algernon::kErrorInvalidParam);
+    XASSERT_RET(width > 0 && height > 0, algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     dst = cl::Image2D(mContext, flags, format, (cl::size_type)width, (cl::size_type)height, 0, data, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createImage2D(cl::Image2D& dst, int width, int height, cl::ImageFormat format, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(width > 0 && height > 0, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(width > 0 && height > 0, algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     dst = cl::Image2D(mContext, flags, format, (cl::size_type)width, (cl::size_type)height, 0, nullptr, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createImage3D(cl::Image3D& dst, const cv::Image& image, cl::ImageFormat format, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(cv::isValid(image), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(cv::isFormatIn(image, {
+    XASSERT_RET(cv::isValid(image), algernon::kErrorInvalidParam);
+    XASSERT_RET(cv::isFormatIn(image, {
         cv::kXFormatGrayU8,
         cv::kXFormatGrayU16,
         cv::kXFormatGrayU32,
@@ -424,80 +424,80 @@ int CLWrapper::createImage3D(cl::Image3D& dst, const cv::Image& image, cl::Image
         cv::kXFormatBGRU8,
         cv::kXFormatRGBAU8,
         cv::kXFormatBGRAU8}), ERROR_UNSUPPORTED_TYPE);
-    ASSERTER_WITH_RET(image.width * image.width == image.height, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(image.width * image.width == image.height, algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     dst = cl::Image3D(mContext, flags, format, image.width, image.width, image.width, 0, 0, image.data[0], &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createImage3D(cl::Image3D& dst, void* data, int width, int height, int depth, cl::ImageFormat format, cl_mem_flags flags)
 {
-    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(data != nullptr, algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     dst = cl::Image3D(mContext, flags, format, width, height, depth, 0, 0, data, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createImage3D(cl::Image3D& dst, int width, int height, int depth, cl::ImageFormat format, cl_mem_flags flags)
 {
     int ret = CL_SUCCESS;
     dst = cl::Image3D(mContext, flags, format, width, height, depth, 0, 0, nullptr, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::copyImage2D(cl::Image2D& dst, const cl::Image2D& src)
 {
-    ASSERTER_WITH_RET(isValid(src), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(isSameSizeAndFormat(src, dst), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(isValid(src), algernon::kErrorInvalidParam);
+    XASSERT_RET(isSameSizeAndFormat(src, dst), algernon::kErrorInvalidParam);
 
     auto width = getImageWidth(src);
     auto height = getImageHeight(src);
 
     cl::Event event;
     int retCopyImage = mCommandQueue.enqueueCopyImage(src, dst, {0, 0, 0}, {0, 0, 0}, {width, height, 1}, 0, &event);
-    ASSERTER_WITH_INFO(retCopyImage == CL_SUCCESS, retCopyImage, "clError: %s", clErrorInfo(retCopyImage).c_str());
+    XASSERT_INFO(retCopyImage == CL_SUCCESS, retCopyImage, "clError: %s", clErrorInfo(retCopyImage).c_str());
 
     mEvents.emplace_back("copyImage2D", event);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::readImage2D(cv::Image& dst, const cl::Image2D& image, bool block)
 {
     perf::TracerScoped trace("CLWrapper::readImage2D");
 
-    ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(isSize(image, dst.width, dst.height), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(cv::isValid(dst), algernon::kErrorInvalidParam);
+    XASSERT_RET(isSize(image, dst.width, dst.height), algernon::kErrorInvalidParam);
 
     cl::Event event;
     int retReadImage = mCommandQueue.enqueueReadImage(image, block, {0, 0, 0}, {(cl::size_type)dst.width, (cl::size_type)dst.height, 1}, dst.stride[0], 0, dst.data[0], 0, &event);
-    ASSERTER_WITH_INFO(retReadImage == CL_SUCCESS, retReadImage, "clError: %s", clErrorInfo(retReadImage).c_str());
+    XASSERT_INFO(retReadImage == CL_SUCCESS, retReadImage, "clError: %s", clErrorInfo(retReadImage).c_str());
 
     mEvents.emplace_back("readImage2D", event);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::readImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1)
 {
     perf::TracerScoped trace("CLWrapper::readImage2D");
 
-    ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(cv::isFormatIn(dst, {cv::kXFormatNV12, cv::kXFormatNV21}), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(cv::isValid(dst), algernon::kErrorInvalidParam);
+    XASSERT_RET(cv::isFormatIn(dst, {cv::kXFormatNV12, cv::kXFormatNV21}), algernon::kErrorInvalidParam);
 
     cl_int ret = CL_SUCCESS;
 
     trace.sub("query");
-    ASSERTER_WITH_RET(isSize(plane0, dst.width, dst.height), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(isSize(plane1, dst.width / 2, dst.height / 2), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(isSize(plane0, dst.width, dst.height), algernon::kErrorInvalidParam);
+    XASSERT_RET(isSize(plane1, dst.width / 2, dst.height / 2), algernon::kErrorInvalidParam);
 
     size_t pitch0 = getImagePitch(plane0);
     size_t pitch1 = getImagePitch(plane1);
@@ -505,41 +505,41 @@ int CLWrapper::readImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::
     trace.sub("read");
     cl::Event event;
     int retReadImage0 = mCommandQueue.enqueueReadImage(plane0, false, {0, 0, 0}, {(cl::size_type)dst.width, (cl::size_type)dst.height, 1}, pitch0, 0, dst.data[0], 0, &event);
-    ASSERTER_WITH_INFO(retReadImage0 == CL_SUCCESS, retReadImage0, "clError: %s", clErrorInfo(retReadImage0).c_str());
+    XASSERT_INFO(retReadImage0 == CL_SUCCESS, retReadImage0, "clError: %s", clErrorInfo(retReadImage0).c_str());
     mEvents.emplace_back("readImage2DP0", event);
 
     int retReadImage1 = mCommandQueue.enqueueReadImage(plane1, false, {0, 0, 0}, {(cl::size_type)dst.width >> 1, (cl::size_type)dst.height >> 1, 1}, pitch1, 0, dst.data[1], 0, &event);
-    ASSERTER_WITH_INFO(retReadImage1 == CL_SUCCESS, retReadImage1, "clError: %s", clErrorInfo(retReadImage1).c_str());
+    XASSERT_INFO(retReadImage1 == CL_SUCCESS, retReadImage1, "clError: %s", clErrorInfo(retReadImage1).c_str());
     mEvents.emplace_back("readImage2DP1", event);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::readImage2D(void* dst, const cl::Image2D& image, int width, int height, int pitch, bool block)
 {
     perf::TracerScoped trace("CLWrapper::readImage2D");
 
-    ASSERTER_WITH_RET(dst != nullptr, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(dst != nullptr, algernon::kErrorInvalidParam);
 
     cl::Event event;
     int retReadImage = mCommandQueue.enqueueReadImage(image, block, {0, 0, 0}, {(cl::size_type)width, (cl::size_type)height, 1}, (cl::size_type)pitch, 0, dst, 0, &event);
-    ASSERTER_WITH_INFO(retReadImage == CL_SUCCESS, retReadImage, "clError: %s", clErrorInfo(retReadImage).c_str());
+    XASSERT_INFO(retReadImage == CL_SUCCESS, retReadImage, "clError: %s", clErrorInfo(retReadImage).c_str());
     mEvents.emplace_back("readImage2D", event);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& image)
 {
     perf::TracerScoped trace("CLWrapper::mapImage2D");
 
-    ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(cv::isFormatIn(dst, {
+    XASSERT_RET(cv::isValid(dst), algernon::kErrorInvalidParam);
+    XASSERT_RET(cv::isFormatIn(dst, {
         cv::kXFormatGrayU8,
         cv::kXFormatRGBU8,
         cv::kXFormatBGRU8,
         cv::kXFormatRGBAU8,
-        cv::kXFormatBGRAU8}), ERROR_INVALID_PARAMETER);
+        cv::kXFormatBGRAU8}), algernon::kErrorInvalidParam);
     
     cl_int ret = CL_SUCCESS;
 
@@ -548,13 +548,13 @@ int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& image)
     cl::size_type width = getImageWidth(image);
     cl::size_type height = getImageHeight(image);
     
-    ASSERTER_WITH_RET(dst.height == height, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(dst.width <= pitch, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(dst.height == height, algernon::kErrorInvalidParam);
+    XASSERT_RET(dst.width <= pitch, algernon::kErrorInvalidParam);
 
     trace.sub("map");
     cl::Event event;
     void* data = mCommandQueue.enqueueMapImage(image, CL_TRUE, CL_MAP_READ, {0, 0, 0}, {width, height, 1}, &pitch, 0, 0, &event, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
     mEvents.emplace_back("mapImage", event);
 
     trace.sub("copy");
@@ -566,18 +566,18 @@ int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& image)
 
     trace.sub("unmap");
     auto retUnmapImage = mCommandQueue.enqueueUnmapMemObject(image, data, 0, &event);
-    ASSERTER_WITH_INFO(retUnmapImage == CL_SUCCESS, retUnmapImage, "clError: %s", clErrorInfo(retUnmapImage).c_str());
+    XASSERT_INFO(retUnmapImage == CL_SUCCESS, retUnmapImage, "clError: %s", clErrorInfo(retUnmapImage).c_str());
     mEvents.emplace_back("unmapImage", event);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1)
 {
     perf::TracerScoped trace("CLWrapper::mapImage2D");
 
-    ASSERTER_WITH_RET(cv::isValid(dst), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(cv::isFormatIn(dst, {cv::kXFormatNV12, cv::kXFormatNV21}), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(cv::isValid(dst), algernon::kErrorInvalidParam);
+    XASSERT_RET(cv::isFormatIn(dst, {cv::kXFormatNV12, cv::kXFormatNV21}), algernon::kErrorInvalidParam);
     
     cl_int ret = CL_SUCCESS;
 
@@ -589,19 +589,19 @@ int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::I
     cl::size_type height0 = getImageHeight(plane0);
     cl::size_type height1 = getImageHeight(plane1);
 
-    ASSERTER_WITH_RET(pitch0 == pitch1, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(width0 == width1 * 2, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(height0 == height1 * 2, ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(dst.width == width0 && dst.height == height0 && dst.stride[0] == pitch0, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(pitch0 == pitch1, algernon::kErrorInvalidParam);
+    XASSERT_RET(width0 == width1 * 2, algernon::kErrorInvalidParam);
+    XASSERT_RET(height0 == height1 * 2, algernon::kErrorInvalidParam);
+    XASSERT_RET(dst.width == width0 && dst.height == height0 && dst.stride[0] == pitch0, algernon::kErrorInvalidParam);
 
     trace.sub("map");
     cl::Event event;
     void* data0 = mCommandQueue.enqueueMapImage(plane0, false, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width0, height0, 1}, &pitch0, 0, 0, &event, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
     mEvents.emplace_back("mapImageP0", event);
 
     void* data1 = mCommandQueue.enqueueMapImage(plane1, true, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width1, height1, 1}, &pitch1, 0, 0, &event, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
     mEvents.emplace_back("mapImageP1", event);
 
     trace.sub("copy");
@@ -610,34 +610,34 @@ int CLWrapper::mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::I
 
     trace.sub("unmap");
     auto retUnmapImage0 = mCommandQueue.enqueueUnmapMemObject(plane0, data0, 0, &event);
-    ASSERTER_WITH_INFO(retUnmapImage0 == CL_SUCCESS, retUnmapImage0, "clError: %s", clErrorInfo(retUnmapImage0).c_str());
+    XASSERT_INFO(retUnmapImage0 == CL_SUCCESS, retUnmapImage0, "clError: %s", clErrorInfo(retUnmapImage0).c_str());
     mEvents.emplace_back("unmapImageP0", event);
 
     auto retUnmapImage1 = mCommandQueue.enqueueUnmapMemObject(plane1, data1, 0, &event);
-    ASSERTER_WITH_INFO(retUnmapImage1 == CL_SUCCESS, retUnmapImage1, "clError: %s", clErrorInfo(retUnmapImage1).c_str());
+    XASSERT_INFO(retUnmapImage1 == CL_SUCCESS, retUnmapImage1, "clError: %s", clErrorInfo(retUnmapImage1).c_str());
     mEvents.emplace_back("unmapImageP1", event);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 void* CLWrapper::mallocSVM(size_t sizeInByte, size_t align, cl_mem_flags flags)
 {
     int ret = CL_SUCCESS;
     cl_device_svm_capabilities validSVM = mDevices.front().getInfo<CL_DEVICE_SVM_CAPABILITIES>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS && (validSVM & CL_DEVICE_SVM_FINE_GRAIN_BUFFER), nullptr, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS && (validSVM & CL_DEVICE_SVM_FINE_GRAIN_BUFFER), nullptr, "clError: %s", clErrorInfo(ret).c_str());
 
     void* data = clSVMAlloc(mContext(), flags, sizeInByte, align);
-    ASSERTER_WITH_RET(data != nullptr, nullptr);
+    XASSERT_RET(data != nullptr, nullptr);
 
     return data;
 }
 
 int CLWrapper::freeSVM(void* data)
 {
-    ASSERTER_WITH_RET(data != nullptr, ERROR_INVALID_PARAMETER);
+    XASSERT_RET(data != nullptr, algernon::kErrorInvalidParam);
     clSVMFree(mContext(), data);
     data = nullptr;
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 CLWrapper& CLWrapper::setNDRange(cl::NDRange global, cl::NDRange local, cl::NDRange offset)
@@ -651,14 +651,14 @@ CLWrapper& CLWrapper::setNDRange(cl::NDRange global, cl::NDRange local, cl::NDRa
 int CLWrapper::flush()
 {
     int retFlush = mCommandQueue.flush();
-    ASSERTER_WITH_INFO(retFlush == CL_SUCCESS, retFlush, "clError: %s", clErrorInfo(retFlush).c_str());
-    return NO_ERROR;
+    XASSERT_INFO(retFlush == CL_SUCCESS, retFlush, "clError: %s", clErrorInfo(retFlush).c_str());
+    return algernon::kSuccess;
 }
 
 int CLWrapper::finish()
 {
     int retFinish = mCommandQueue.finish();
-    ASSERTER_WITH_INFO(retFinish == CL_SUCCESS, retFinish, "clError: %s", clErrorInfo(retFinish).c_str());
+    XASSERT_INFO(retFinish == CL_SUCCESS, retFinish, "clError: %s", clErrorInfo(retFinish).c_str());
 
     return clearAndSyncEvents();
 }
@@ -666,15 +666,15 @@ int CLWrapper::finish()
 int CLWrapper::wait(const cl::Event& event)
 {
     int retEventWait = event.wait();
-    ASSERTER_WITH_INFO(retEventWait == CL_SUCCESS, retEventWait, "clError: %s", clErrorInfo(retEventWait).c_str());
-    return NO_ERROR;
+    XASSERT_INFO(retEventWait == CL_SUCCESS, retEventWait, "clError: %s", clErrorInfo(retEventWait).c_str());
+    return algernon::kSuccess;
 }
 
 int CLWrapper::barrier()
 {
     int retBarrier = mCommandQueue.enqueueBarrierWithWaitList();
-    ASSERTER_WITH_INFO(retBarrier == CL_SUCCESS, retBarrier, "clError: %s", clErrorInfo(retBarrier).c_str());
-    return NO_ERROR;
+    XASSERT_INFO(retBarrier == CL_SUCCESS, retBarrier, "clError: %s", clErrorInfo(retBarrier).c_str());
+    return algernon::kSuccess;
 }
 
 int CLWrapper::clearAndSyncEvents()
@@ -683,30 +683,30 @@ int CLWrapper::clearAndSyncEvents()
         int ret = CL_SUCCESS;
         for (const auto& e : mEvents) {
             double enqueue = e.event.getProfilingInfo<CL_PROFILING_COMMAND_QUEUED>(&ret) / 1000000.0; // in ms
-            ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+            XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
             double submit = e.event.getProfilingInfo<CL_PROFILING_COMMAND_SUBMIT>(&ret) / 1000000.0;
-            ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+            XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
             double start = e.event.getProfilingInfo<CL_PROFILING_COMMAND_START>(&ret) / 1000000.0;
-            ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+            XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
             double end = e.event.getProfilingInfo<CL_PROFILING_COMMAND_END>(&ret) / 1000000.0;
-            ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+            XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
             LOGGER_I("cl profiling => (enqueue)%.3f, (:submit)%.3f, (:start)%.3f, (:end)%.3f ms => [%s]\n", enqueue, (submit - enqueue), (start - submit), (end - start), e.name.c_str());
         }
     }
     mEvents.clear();
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::querySupportedImageFormats(const cl_mem_object_type object, const cl_mem_flags flags) const
 {
     std::vector<cl::ImageFormat> formats;
     int retGetSupportedFormats = mContext.getSupportedImageFormats(flags, CL_MEM_OBJECT_IMAGE2D, &formats);
-    ASSERTER_WITH_INFO(retGetSupportedFormats == CL_SUCCESS, retGetSupportedFormats, "clError: %s", clErrorInfo(retGetSupportedFormats).c_str());
+    XASSERT_INFO(retGetSupportedFormats == CL_SUCCESS, retGetSupportedFormats, "clError: %s", clErrorInfo(retGetSupportedFormats).c_str());
 
     std::set<std::string> listChannelOrder;
     std::set<std::string> listChannelDataType;
@@ -733,14 +733,14 @@ int CLWrapper::querySupportedImageFormats(const cl_mem_object_type object, const
         LOGGER_I("    %s\n", type.c_str());
     }
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::querySVMCapabilities() const
 {
     int ret = CL_SUCCESS;
     cl_device_svm_capabilities capsSVM = mDevices.front().getInfo<CL_DEVICE_SVM_CAPABILITIES>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
     if (capsSVM & CL_DEVICE_SVM_COARSE_GRAIN_BUFFER) {
         LOGGER_I("OpenCL supported SVM type: %s\n", "CL_DEVICE_SVM_COARSE_GRAIN_BUFFER");
@@ -755,7 +755,7 @@ int CLWrapper::querySVMCapabilities() const
         LOGGER_I("OpenCL supported SVM type: %s\n", "CL_DEVICE_SVM_ATOMICS");
     }
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getPlatform()
@@ -768,7 +768,7 @@ int CLWrapper::getDevice()
 {
     perf::TracerScoped trace("CLWrapper::getDevice");
 
-    ASSERTER_WITH_RET(!mPlatforms.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mPlatforms.empty(), algernon::kErrorInvalidParam);
     return mPlatforms.front().getDevices(CL_DEVICE_TYPE_GPU, &mDevices);
 }
 
@@ -776,26 +776,26 @@ int CLWrapper::createContext(cl_context_properties* properties)
 {
     perf::TracerScoped trace("CLWrapper::createContext");
 
-    ASSERTER_WITH_RET(!mDevices.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mDevices.empty(), algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     mContext = cl::Context(mDevices, properties, nullptr, nullptr, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createCommandQueue(cl_command_queue_properties properties)
 {
     perf::TracerScoped trace("CLWrapper::createCommandQueue");
 
-    ASSERTER_WITH_RET(!mDevices.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mDevices.empty(), algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     mCommandQueue = cl::CommandQueue(mContext, mDevices.front(), properties, &ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::createProgramWithKernelString(const std::string& kernel)
@@ -810,7 +810,7 @@ int CLWrapper::createProgramWithKernelString(const std::string& kernel)
 
         int retGetProgramBuildLog = CL_SUCCESS;
         std::string log = mProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(mDevices.front(), &retGetProgramBuildLog);
-        ASSERTER_WITH_INFO(retGetProgramBuildLog == CL_SUCCESS, retGetProgramBuildLog, "clError: %s", clErrorInfo(retGetProgramBuildLog).c_str());
+        XASSERT_INFO(retGetProgramBuildLog == CL_SUCCESS, retGetProgramBuildLog, "clError: %s", clErrorInfo(retGetProgramBuildLog).c_str());
 
         LOGGER_E("cl build log: %s\n", log.c_str());
     }
@@ -828,7 +828,7 @@ int CLWrapper::buildProgram(const std::string& option)
 
         int retGetProgramBuildLog = CL_SUCCESS;
         std::string log = mProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(mDevices.front(), &retGetProgramBuildLog);
-        ASSERTER_WITH_INFO(retGetProgramBuildLog == CL_SUCCESS, retGetProgramBuildLog, "clError: %s", clErrorInfo(retGetProgramBuildLog).c_str());
+        XASSERT_INFO(retGetProgramBuildLog == CL_SUCCESS, retGetProgramBuildLog, "clError: %s", clErrorInfo(retGetProgramBuildLog).c_str());
 
         LOGGER_E("cl build log: %s\n", log.c_str());
     }
@@ -838,9 +838,9 @@ int CLWrapper::buildProgram(const std::string& option)
 
 int CLWrapper::getKernel(cl::Kernel& kernel, const std::string& name)
 {
-    ASSERTER_WITH_INFO(mKernels.find(name) != mKernels.end(), ERROR_NOT_FOUND, "failed to find kernel[%s]!", name.c_str());
+    XASSERT_INFO(mKernels.find(name) != mKernels.end(), ERROR_NOT_FOUND, "failed to find kernel[%s]!", name.c_str());
     kernel = mKernels[name];
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 void CLWrapper::checkLoadKey(const std::string& key, bool& isBinAvailable)
@@ -855,13 +855,13 @@ void CLWrapper::checkLoadKey(const std::string& key, bool& isBinAvailable)
         std::string keyBinaryLoaded(key.cbegin() + 40, key.cbegin() + 60);
         LOGGER_D("CLWrapper: key verification(1/5)\n");
 
-        if (getDeviceKey(mKeyDevice) == NO_ERROR && mKeyDevice == keyDeviceLoaded) {
+        if (getDeviceKey(mKeyDevice) == algernon::kSuccess && mKeyDevice == keyDeviceLoaded) {
             LOGGER_D("CLWrapper: key verification(2/5)\n");
 
-            if (getKernelKey(mKeyKernel) == NO_ERROR && mKeyKernel == keyKernelLoaded) {
+            if (getKernelKey(mKeyKernel) == algernon::kSuccess && mKeyKernel == keyKernelLoaded) {
                 LOGGER_D("CLWrapper: key verification(3/5)\n");
 
-                if (getBinaryKey(mKeyBinary) == NO_ERROR && mKeyBinary == keyBinaryLoaded) {
+                if (getBinaryKey(mKeyBinary) == algernon::kSuccess && mKeyBinary == keyBinaryLoaded) {
                     LOGGER_D("CLWrapper: key verification(4/5)\n");
 
                     std::vector<unsigned char> bin(mStringBinary.cbegin(), mStringBinary.cend()); // mStringBinary loaded in getBinaryKey()
@@ -885,8 +885,8 @@ int CLWrapper::loadCheckKey(std::string& key)
 {
     perf::TracerScoped trace("CLWrapper::loadCheckKey");
 
-    ASSERTER_WITH_RET(!mFolderBinary.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mNameBinaryWithoutFormat.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mFolderBinary.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mNameBinaryWithoutFormat.empty(), algernon::kErrorInvalidParam);
 
     std::string pathKey = mFolderBinary + mNameBinaryWithoutFormat + ".key";
     if (!file::exists(pathKey)) {
@@ -895,18 +895,18 @@ int CLWrapper::loadCheckKey(std::string& key)
     }
 
     int retLoadBuffer = file::XFile::loadFileToBuffer(pathKey, key);
-    ASSERTER_WITH_RET(retLoadBuffer == NO_ERROR, retLoadBuffer);
+    XASSERT_RET(retLoadBuffer == algernon::kSuccess, retLoadBuffer);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::storeBinAndKey()
 {
     perf::TracerScoped trace("CLWrapper::storeBinAndKey");
 
-    ASSERTER_WITH_RET(!mFolderBinary.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mNameBinaryWithoutFormat.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mStringKernel.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mFolderBinary.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mNameBinaryWithoutFormat.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mStringKernel.empty(), algernon::kErrorInvalidParam);
 
     std::string pathBin = mFolderBinary + mNameBinaryWithoutFormat + ".bin";
     std::string pathKey = mFolderBinary + mNameBinaryWithoutFormat + ".key";
@@ -914,16 +914,16 @@ int CLWrapper::storeBinAndKey()
     trace.sub("bin");
     int retGetBinary = CL_SUCCESS;
     cl::Program::Binaries bins = mProgram.getInfo<CL_PROGRAM_BINARIES>(&retGetBinary);
-    ASSERTER_WITH_INFO(retGetBinary == CL_SUCCESS && !bins.empty(), retGetBinary, "clError: %s", clErrorInfo(retGetBinary).c_str());
+    XASSERT_INFO(retGetBinary == CL_SUCCESS && !bins.empty(), retGetBinary, "clError: %s", clErrorInfo(retGetBinary).c_str());
 
     std::string bin(bins.front().cbegin(), bins.front().cend());
 
     int retSaveBin = file::XFile::saveBufferToFile(bin, pathBin);
-    ASSERTER_WITH_RET(retSaveBin == NO_ERROR, retSaveBin);
+    XASSERT_RET(retSaveBin == algernon::kSuccess, retSaveBin);
 
     trace.sub("key");
     int retGetDeviceKey = getDeviceKey(mKeyDevice);
-    ASSERTER_WITH_RET(retGetDeviceKey == NO_ERROR, retGetDeviceKey);
+    XASSERT_RET(retGetDeviceKey == algernon::kSuccess, retGetDeviceKey);
 
     mKeyKernel = std::to_string(std::hash<std::string>{}(mStringKernel));
     mKeyBinary = std::to_string(std::hash<std::string>{}(bin));
@@ -933,9 +933,9 @@ int CLWrapper::storeBinAndKey()
     std::string key = mKeyDevice + mKeyKernel + mKeyBinary;
 
     int retSaveKey = file::XFile::saveBufferToFile(key, pathKey);
-    ASSERTER_WITH_RET(retSaveKey == NO_ERROR, retSaveKey);
+    XASSERT_RET(retSaveKey == algernon::kSuccess, retSaveKey);
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getDeviceKey(std::string& key)
@@ -943,35 +943,35 @@ int CLWrapper::getDeviceKey(std::string& key)
     std::string nameDevice, vendorDevice, versionDevice;
 
     int retGetName = getDeviceName(nameDevice);
-    ASSERTER_WITH_RET(retGetName == NO_ERROR, retGetName);
+    XASSERT_RET(retGetName == algernon::kSuccess, retGetName);
 
     int retGetVendor = getDeviceVendor(vendorDevice);
-    ASSERTER_WITH_RET(retGetVendor == NO_ERROR, retGetVendor);
+    XASSERT_RET(retGetVendor == algernon::kSuccess, retGetVendor);
 
     int retGetVersion = getDeviceVersion(versionDevice);
-    ASSERTER_WITH_RET(retGetVersion == NO_ERROR, retGetVersion);
+    XASSERT_RET(retGetVersion == algernon::kSuccess, retGetVersion);
 
     std::string strDevice = nameDevice + vendorDevice + versionDevice;
     key = std::to_string(std::hash<std::string>{}(strDevice));
     key.resize(20, 'X'); // ensure 20 characters
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getKernelKey(std::string& key)
 {
-    ASSERTER_WITH_RET(!mStringKernel.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mStringKernel.empty(), algernon::kErrorInvalidParam);
 
     key = std::to_string(std::hash<std::string>{}(mStringKernel));
     key.resize(20, 'X'); // ensure 20 characters
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getBinaryKey(std::string& key)
 {
-    ASSERTER_WITH_RET(!mFolderBinary.empty(), ERROR_INVALID_PARAMETER);
-    ASSERTER_WITH_RET(!mNameBinaryWithoutFormat.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mFolderBinary.empty(), algernon::kErrorInvalidParam);
+    XASSERT_RET(!mNameBinaryWithoutFormat.empty(), algernon::kErrorInvalidParam);
 
     std::string pathBinary = mFolderBinary + mNameBinaryWithoutFormat + ".bin";
 
@@ -981,46 +981,46 @@ int CLWrapper::getBinaryKey(std::string& key)
     }
 
     int retLoadBuffer = file::XFile::loadFileToBuffer(pathBinary, mStringBinary);
-    ASSERTER_WITH_RET(retLoadBuffer == NO_ERROR, retLoadBuffer);
-    ASSERTER_WITH_RET(!mStringBinary.empty(), ERROR_INVALID_DATA);
+    XASSERT_RET(retLoadBuffer == algernon::kSuccess, retLoadBuffer);
+    XASSERT_RET(!mStringBinary.empty(), ERROR_INVALID_DATA);
 
     key = std::to_string(std::hash<std::string>{}(mStringBinary));
     key.resize(20, 'X');
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getDeviceName(std::string& name)
 {
-    ASSERTER_WITH_RET(!mDevices.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mDevices.empty(), algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     name = mDevices.front().getInfo<CL_DEVICE_NAME>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getDeviceVendor(std::string& vendor)
 {
-    ASSERTER_WITH_RET(!mDevices.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mDevices.empty(), algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     vendor = mDevices.front().getInfo<CL_DEVICE_VENDOR>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getDeviceVersion(std::string& version)
 {
-    ASSERTER_WITH_RET(!mDevices.empty(), ERROR_INVALID_PARAMETER);
+    XASSERT_RET(!mDevices.empty(), algernon::kErrorInvalidParam);
 
     int ret = CL_SUCCESS;
     version = mDevices.front().getInfo<CL_DEVICE_VERSION>(&ret);
-    ASSERTER_WITH_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
+    XASSERT_INFO(ret == CL_SUCCESS, ret, "clError: %s", clErrorInfo(ret).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 int CLWrapper::getKernelName(const cl::Kernel kernel, std::string& name)
@@ -1028,13 +1028,13 @@ int CLWrapper::getKernelName(const cl::Kernel kernel, std::string& name)
     name.clear();
     size_t length = 0;
     cl_int retGetKernelNameLength =clGetKernelInfo(kernel.get(), CL_KERNEL_FUNCTION_NAME, 0, nullptr, &length);
-    ASSERTER_WITH_INFO(retGetKernelNameLength == CL_SUCCESS, retGetKernelNameLength, "clError: %s", clErrorInfo(retGetKernelNameLength).c_str());
+    XASSERT_INFO(retGetKernelNameLength == CL_SUCCESS, retGetKernelNameLength, "clError: %s", clErrorInfo(retGetKernelNameLength).c_str());
 
     name = std::string(length, '0');
     cl_int retGetKernelName = clGetKernelInfo(kernel.get(), CL_KERNEL_FUNCTION_NAME, length, (char*)name.c_str(), nullptr);
-    ASSERTER_WITH_INFO(retGetKernelName == CL_SUCCESS, retGetKernelName, "clError: %s", clErrorInfo(retGetKernelName).c_str());
+    XASSERT_INFO(retGetKernelName == CL_SUCCESS, retGetKernelName, "clError: %s", clErrorInfo(retGetKernelName).c_str());
 
-    return NO_ERROR;
+    return algernon::kSuccess;
 }
 
 } // namespace gpu
