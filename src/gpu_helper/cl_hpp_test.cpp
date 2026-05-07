@@ -10,7 +10,7 @@
 #include "cl_symbols.h"
 #include "cl_wrapper.h"
 
-#include "algernon/log/xlogger.h"
+#include "log/xlogger.h"
 #include "gtest/gtest.h"
 
 
@@ -167,5 +167,5 @@ TEST(OpenCL, CLHPP)
 TEST(OpenCL, CLWrapper)
 {
     gpu::CLWrapper ocl("./", "cl_wrapper_test");
-    EXPECT_TRUE(ocl.init() == algernon::kSuccess);
+    EXPECT_TRUE(ocl.init() == err::kSuccess);
 }

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/regex/xregex.h"
+#include "regex/xregex.h"
 
 using namespace algernon::regex;
 

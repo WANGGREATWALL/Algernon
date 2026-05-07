@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/file/xpath.h"
+#include "file/xpath.h"
 
 using algernon::file::XPath;
 

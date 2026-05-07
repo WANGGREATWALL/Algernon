@@ -1,6 +1,7 @@
-#include "algernon/file/xfile.h"
-#include "algernon/log/xlogger.h"
-#include "algernon/file/xpath.h"
+#include "file/xfile.h"
+#include "log/xlogger.h"
+#include "file/xpath.h"
+#include "log/xerror.h"
 
 #include <fstream>
 #include <sstream>
@@ -20,17 +21,17 @@ bool isDirectory(const std::string& dir) {
 int createDirectory(const std::string& dir) {
     std::error_code ec;
     std::filesystem::create_directories(dir, ec);
-    XASSERT_RET(!ec, kErrorOpenFailed);
-    return kSuccess;
+    XASSERT_RET(!ec, err::kErrorOpenFailed);
+    return err::kSuccess;
 }
 
 // -- XFile --
 
 int XFile::loadToBuffer(const std::string& filename, algernon::memory::XBuffer<char>& buffer) {
-    XASSERT_RET(exists(filename), kErrorFileNotFound);
+    XASSERT_RET(exists(filename), err::kErrorFileNotFound);
 
     std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
-    XASSERT_RET(ifs.is_open(), kErrorOpenFailed);
+    XASSERT_RET(ifs.is_open(), err::kErrorOpenFailed);
 
     auto size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
@@ -39,34 +40,34 @@ int XFile::loadToBuffer(const std::string& filename, algernon::memory::XBuffer<c
     ifs.read(buffer.data(), size);
     buffer.data()[size] = '\0';
 
-    return kSuccess;
+    return err::kSuccess;
 }
 
 int XFile::loadToString(const std::string& filename, std::string& buffer) {
-    XASSERT_RET(exists(filename), kErrorFileNotFound);
+    XASSERT_RET(exists(filename), err::kErrorFileNotFound);
 
     std::ifstream ifs(filename, std::ios::binary);
-    XASSERT_RET(ifs.is_open(), kErrorOpenFailed);
+    XASSERT_RET(ifs.is_open(), err::kErrorOpenFailed);
 
     std::ostringstream ss;
     ss << ifs.rdbuf();
     buffer = ss.str();
 
-    return kSuccess;
+    return err::kSuccess;
 }
 
 int XFile::saveFromBuffer(const algernon::memory::XBuffer<char>& buffer, const std::string& filename) {
     std::ofstream ofs(filename, std::ios::binary);
-    XASSERT_RET(ofs.is_open(), kErrorOpenFailed);
+    XASSERT_RET(ofs.is_open(), err::kErrorOpenFailed);
     ofs.write(buffer.data(), static_cast<std::streamsize>(buffer.size()));
-    return kSuccess;
+    return err::kSuccess;
 }
 
 int XFile::saveFromString(const std::string& content, const std::string& filename) {
     std::ofstream ofs(filename, std::ios::binary);
-    XASSERT_RET(ofs.is_open(), kErrorOpenFailed);
+    XASSERT_RET(ofs.is_open(), err::kErrorOpenFailed);
     ofs << content;
-    return kSuccess;
+    return err::kSuccess;
 }
 
 // -- XFileList --

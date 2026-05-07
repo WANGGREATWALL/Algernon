@@ -24,8 +24,8 @@ message(STATUS "***********************************************************")
 # Generate version.h
 # ============================================================================
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc/algernon/version.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/inc/algernon/version.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/inc/version.h
     @ONLY
 )
 
@@ -89,6 +89,7 @@ add_executable(algernon_test
     test/test_xargs.cpp
     test/test_xpath.cpp
     test/test_xtimer.cpp
+    test/test_xlogger.cpp
     test/test_xplatform.cpp
     ${GTEST_SOURCES}
 )

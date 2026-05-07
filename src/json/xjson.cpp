@@ -1,7 +1,8 @@
-#include "algernon/json/xjson.h"
-#include "algernon/log/xlogger.h"
-#include "algernon/file/xfile.h"
+#include "json/xjson.h"
+#include "log/xlogger.h"
+#include "file/xfile.h"
 #include "cJSON.h"
+#include "log/xerror.h"
 
 #include <fstream>
 
@@ -129,16 +130,16 @@ XJson XJson::array() {
 int XJson::parseFile(const std::string& filename) {
     std::string content;
     int ret = algernon::file::XFile::loadToString(filename, content);
-    XASSERT_RET(ret == kSuccess, ret);
+    XASSERT_RET(ret == err::kSuccess, ret);
     return parseString(content);
 }
 
 int XJson::parseString(const std::string& str) {
     mRoot = cJSON_Parse(str.c_str());
-    XASSERT_INFO(mRoot != nullptr, kErrorBadFormat,
+    XASSERT_INFO(mRoot != nullptr, err::kErrorBadFormat,
         "JSON parse error before: '%s'", cJSON_GetErrorPtr());
     mOwned = true;
-    return kSuccess;
+    return err::kSuccess;
 }
 
 void XJson::clear() {
@@ -240,9 +241,9 @@ std::string XJson::dump(int indent) const {
 int XJson::save(const std::string& filename, int indent) const {
     std::string content = dump(indent);
     std::ofstream ofs(filename);
-    XASSERT_RET(ofs.is_open(), kErrorOpenFailed);
+    XASSERT_RET(ofs.is_open(), err::kErrorOpenFailed);
     ofs << content;
-    return kSuccess;
+    return err::kSuccess;
 }
 
 }} // namespace algernon::json

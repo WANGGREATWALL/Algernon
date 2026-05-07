@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/util/xargs.h"
+#include "util/xargs.h"
 
 using algernon::util::XArgs;
 

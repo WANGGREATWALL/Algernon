@@ -1,4 +1,4 @@
-#include "algernon/regex/xregex.h"
+#include "regex/xregex.h"
 
 namespace algernon { namespace regex {
 

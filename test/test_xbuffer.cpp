@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/memory/xbuffer.h"
+#include "memory/xbuffer.h"
 
 using algernon::memory::XBuffer;
 

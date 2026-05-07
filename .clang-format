@@ -1,0 +1,52 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+
+# --- 基础格式与标准 ---
+Standard: c++11                             # 明确 C++ 标准，确保新特性解析正确
+ColumnLimit: 120                            # 稍微放宽到 120，适应现代宽屏
+IndentWidth: 4                              # 4 空格缩进，层级更分明
+TabWidth: 4                                 # Tab 宽度等同于缩进
+UseTab: Never                               # 禁用 Tab，纯空格缩进
+
+# --- 大括号与换行逻辑 ---
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true                          # 类定义的 { 换行
+  AfterStruct: true                         # 结构体定义的 { 换行
+  AfterFunction: true                       # 函数定义的 { 换行 (保留清晰的函数签名)
+  AfterEnum: true                           # 枚举定义的 { 换行
+  AfterUnion: true                          # 联合体定义的 { 换行
+  AfterControlStatement: Never              # 内部控制流 (if/for/while) 的 { 不换行，保持紧凑
+  AfterNamespace: false                     # 命名空间的 { 不换行
+  AfterExternBlock: false                   # extern 块的 { 不换行
+  BeforeCatch: false                        # catch 前的 { 不换行 (即 } catch {)
+  BeforeElse: false                         # else 前的 { 不换行 (即 } else {)
+  BeforeLambdaBody: false                   # Lambda 表达式的 { 不换行
+  BeforeWhile: false                        # do-while 的 while 前不换行
+
+# --- 单行折叠规则 ---
+AllowShortFunctionsOnASingleLine: Inline    # 仅允许类内部的简短内联函数保持单行
+AllowShortIfStatementsOnASingleLine: false  # 禁止 if 语句折叠到单行
+AllowShortLoopsOnASingleLine: false         # 禁止循环语句折叠到单行
+AllowShortCaseLabelsOnASingleLine: true     # 允许将 case 和 return 写在同一行
+
+# --- 指针、引用与操作符 ---
+PointerAlignment: Left                      # 指针靠左对齐 (例如 int* a;)
+ReferenceAlignment: Left                    # 引用靠左对齐 (例如 int& a;)
+SpaceBeforeAssignmentOperators: true        # 赋值操作符前保留空格 (a = b)
+SpacesInAngles: false                       # 模板尖括号内不加空格 (<T>)
+SpacesInParentheses: false                  # 括号内部不加空格 ((x))
+SpaceBeforeParens: ControlStatements        # 仅在控制流关键字后加空格 (if (x))
+
+# --- 类成员与命名空间 ---
+AccessModifierOffset: -4                    # 访问修饰符 (public/private) 向左偏移，与类名对齐
+NamespaceIndentation: None                  # 命名空间内部的代码不额外缩进
+FixNamespaceComments: true                  # 自动修复命名空间结尾的注释 (即 // namespace XXX)
+
+# --- 头文件与对齐排版 ---
+SortIncludes: true                          # 自动对 #include 进行字母排序
+IncludeBlocks: Regroup                      # 根据 Google 规范将 #include 重新分组
+AlignConsecutiveAssignments: true           # 不强制对齐连续的赋值语句 (避免修改一个变量名导致大面积 diff)
+AlignConsecutiveDeclarations: true          # 不强制对齐连续的变量声明
+AlignTrailingComments: true                 # 尾随注释自动对齐，保持视觉整洁

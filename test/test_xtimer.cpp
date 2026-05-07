@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/perf/xtimer.h"
+#include "perf/xtimer.h"
 
 using namespace algernon::perf;
 

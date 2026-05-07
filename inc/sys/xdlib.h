@@ -24,7 +24,7 @@
 #include <unordered_map>
 #include <mutex>
 
-#include "algernon/log/xlogger.h"
+#include "log/xlogger.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <dlfcn.h>

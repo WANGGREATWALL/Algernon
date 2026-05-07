@@ -1,5 +1,5 @@
-#include "algernon/log/xlogger.h"
-#include "algernon/version.h"
+#include "log/xlogger.h"
+#include "version.h"
 #include "gtest/gtest.h"
 
 int main(int argc, char** argv) {

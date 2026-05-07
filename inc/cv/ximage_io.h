@@ -12,7 +12,7 @@
  *   algernon::cv::XImageIO::dump(img, "/data/output");
  */
 
-#include "algernon/cv/ximage.h"
+#include "cv/ximage.h"
 
 namespace algernon { namespace cv {
 

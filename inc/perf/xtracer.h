@@ -20,7 +20,7 @@
 
 #include <string>
 #include <memory>
-#include "algernon/perf/xtimer.h"
+#include "perf/xtimer.h"
 
 namespace algernon { namespace perf {
 

@@ -17,7 +17,7 @@
 #include <map>
 
 #include "cl_symbols.h"
-#include "algernon/cv/ximage.h"
+#include "cv/ximage.h"
 
 using algernon::cv::Image;
 
@@ -89,13 +89,13 @@ public:
     int enqueue(std::string nameKernel, cl::Event* event=nullptr, Args... args) {
         cl::Kernel kernel;
         int retGetKernel = getKernel(kernel, nameKernel);
-        XASSERT_RET(retGetKernel == algernon::kSuccess, retGetKernel);
+        XASSERT_RET(retGetKernel == err::kSuccess, retGetKernel);
 
         int idx = 0;
         std::vector<int> setargs{ [&] { return kernel.setArg(idx++, args); }()... };
 
         for (int i = 0; i < setargs.size(); ++i) {
-            XASSERT_INFO(setargs[i] == CL_SUCCESS, algernon::kErrorInvalidParam, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
+            XASSERT_INFO(setargs[i] == CL_SUCCESS, err::kErrorInvalidParam, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
         }
 
         if (event) {
@@ -109,7 +109,7 @@ public:
             mEvents.emplace_back(nameKernel, eventInner);
         }
         
-        return algernon::kSuccess;
+        return err::kSuccess;
     }
 
     /**

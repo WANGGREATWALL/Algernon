@@ -4,8 +4,8 @@
 #include <vector>
 #include <string>
 
-#include "algernon/log/xlogger.h"
-#include "algernon/sys/xdlib.h"
+#include "log/xlogger.h"
+#include "sys/xdlib.h"
 
 using algernon::sys::XDLib;
 
@@ -50,7 +50,7 @@ public:
 private:
     CLSymbols() {
         int ret = mLib.load(mLibPaths);
-        XASSERT(ret == algernon::kSuccess);
+        XASSERT(ret == err::kSuccess);
     }
 
     algernon::sys::XDLib mLib;

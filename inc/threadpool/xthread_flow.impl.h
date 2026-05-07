@@ -2,7 +2,7 @@
 #define ALGERNON_THREADPOOL_XTHREAD_FLOW_IMPL_H_
 
 #include "xthread_flow.h"
-#include "algernon/log/xlogger.h"
+#include "log/xlogger.h"
 
 namespace algernon { namespace framework {
 
