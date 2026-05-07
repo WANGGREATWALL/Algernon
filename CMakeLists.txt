@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 # Version (update here; triggers re-configure)
 # ============================================================================
 set(ALGERNON_VERSION_MAJOR 1)
-set(ALGERNON_VERSION_MINOR 0)
+set(ALGERNON_VERSION_MINOR 1)
 set(ALGERNON_VERSION_PATCH 0)
 set(ALGERNON_VERSION "${ALGERNON_VERSION_MAJOR}.${ALGERNON_VERSION_MINOR}.${ALGERNON_VERSION_PATCH}")
 
