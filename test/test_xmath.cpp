@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/math/xmath.h"
+#include "math/xmath.h"
 
 using namespace algernon::math;
 

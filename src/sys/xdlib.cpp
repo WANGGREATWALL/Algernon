@@ -1,4 +1,5 @@
-#include "algernon/sys/xdlib.h"
+#include "sys/xdlib.h"
+#include "log/xerror.h"
 
 namespace algernon { namespace sys {
 
@@ -29,10 +30,10 @@ int XDLib::load(const std::string& path) {
 #else
     mHandle = LoadLibraryA(path.c_str());
 #endif
-    XASSERT_INFO(mHandle != nullptr, kErrorOpenFailed,
+    XASSERT_INFO(mHandle != nullptr, err::kErrorOpenFailed,
         "XDLib: failed to load library(%s)!", path.c_str());
     XLOG_I("XDLib: loaded library(%s)\n", path.c_str());
-    return kSuccess;
+    return err::kSuccess;
 }
 
 int XDLib::load(const std::vector<std::string>& paths) {
@@ -45,27 +46,27 @@ int XDLib::load(const std::vector<std::string>& paths) {
         if (handle != nullptr) {
             mHandle = handle;
             XLOG_I("XDLib: loaded library(%s)\n", path.c_str());
-            return kSuccess;
+            return err::kSuccess;
         }
     }
     XLOG_E("XDLib: failed to load library from %zu candidate paths!\n", paths.size());
-    return kErrorOpenFailed;
+    return err::kErrorOpenFailed;
 }
 
 int XDLib::unload() {
     if (mHandle != nullptr) {
 #ifdef ALGERNON_USE_DLOPEN
         auto ret = dlclose(mHandle);
-        XASSERT_RET(ret == 0, kErrorInvalidHandle);
+        XASSERT_RET(ret == 0, err::kErrorInvalidHandle);
 #else
         auto ret = FreeLibrary(mHandle);
-        XASSERT_RET(ret == true, kErrorInvalidHandle);
+        XASSERT_RET(ret == true, err::kErrorInvalidHandle);
 #endif
         mHandle = nullptr;
         std::lock_guard<std::mutex> lock(mMutex);
         mSymbolCache.clear();
     }
-    return kSuccess;
+    return err::kSuccess;
 }
 
 bool XDLib::isLoaded() const {

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "algernon/sys/xplatform.h"
+#include "sys/xplatform.h"
 
 using namespace algernon::sys;
 

@@ -1,5 +1,5 @@
-#include "algernon/sys/xplatform.h"
-#include "algernon/log/xlogger.h"
+#include "sys/xplatform.h"
+#include "log/xlogger.h"
 
 #include <cstdlib>
 #include <thread>
@@ -207,6 +207,66 @@ std::string getEnv(const char* name) {
 
 bool hasEnv(const char* name) {
     return std::getenv(name) != nullptr;
+}
+
+std::string getSystemPropertyValue(const char* name, const char* defaultValue) {
+#ifdef ALGERNON_OS_ANDROID
+    char prop[PROP_VALUE_MAX] = {0};
+    if (__system_property_get(name, prop) > 0) {
+        return std::string(prop);
+    }
+#endif
+    return std::string(defaultValue ? defaultValue : "");
+}
+
+int getSystemPropertyValue(const char* name, int defaultValue) {
+#ifdef ALGERNON_OS_ANDROID
+    char prop[PROP_VALUE_MAX] = {0};
+    if (__system_property_get(name, prop) > 0) {
+        if (std::strlen(prop) > 0) {
+            return std::atoi(prop);
+        }
+    }
+#endif
+    return defaultValue;
+}
+
+float getSystemPropertyValue(const char* name, float defaultValue) {
+#ifdef ALGERNON_OS_ANDROID
+    char prop[PROP_VALUE_MAX] = {0};
+    if (__system_property_get(name, prop) > 0) {
+        if (std::strlen(prop) > 0) {
+            return static_cast<float>(std::atof(prop));
+        }
+    }
+#endif
+    return defaultValue;
+}
+
+bool setSystemPropertyValue(const char* name, const char* value) {
+#ifdef ALGERNON_OS_ANDROID
+    return __system_property_set(name, value ? value : "") == 0;
+#else
+    return false;
+#endif
+}
+
+bool setSystemPropertyValue(const char* name, int value) {
+#ifdef ALGERNON_OS_ANDROID
+    std::string valStr = std::to_string(value);
+    return __system_property_set(name, valStr.c_str()) == 0;
+#else
+    return false;
+#endif
+}
+
+bool setSystemPropertyValue(const char* name, float value) {
+#ifdef ALGERNON_OS_ANDROID
+    std::string valStr = std::to_string(value);
+    return __system_property_set(name, valStr.c_str()) == 0;
+#else
+    return false;
+#endif
 }
 
 // ============================================================================

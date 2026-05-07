@@ -1,9 +1,10 @@
 #include <cstring>
 #include <map>
+#include "log/xerror.h"
 
-#include "algernon/cv/ximage.h"
-#include "algernon/math/xmath.h"
-#include "algernon/log/xlogger.h"
+#include "cv/ximage.h"
+#include "math/xmath.h"
+#include "log/xlogger.h"
 
 namespace algernon { namespace cv {
 

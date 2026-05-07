@@ -1,5 +1,5 @@
-#include "algernon/perf/xtimer.h"
-#include "algernon/log/xlogger.h"
+#include "perf/xtimer.h"
+#include "log/xlogger.h"
 
 #include <iomanip>
 #include <sstream>

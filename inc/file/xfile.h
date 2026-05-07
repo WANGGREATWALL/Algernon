@@ -13,15 +13,18 @@
 
 #include <string>
 #include <vector>
-#include "algernon/memory/xbuffer.h"
 
-namespace algernon { namespace file {
+#include "memory/xbuffer.h"
+
+namespace algernon {
+namespace file {
 
 bool exists(const std::string& filename);
 bool isDirectory(const std::string& dir);
 int  createDirectory(const std::string& dir);
 
-class XFile {
+class XFile
+{
 public:
     static int loadToBuffer(const std::string& filename, algernon::memory::XBuffer<char>& buffer);
     static int loadToString(const std::string& filename, std::string& buffer);
@@ -29,7 +32,8 @@ public:
     static int saveFromString(const std::string& content, const std::string& filename);
 };
 
-class XFileList {
+class XFileList
+{
 public:
     /** @brief Get all entries (full path) in a directory. */
     static std::vector<std::string> getFullListIn(const std::string& folder);
@@ -38,13 +42,18 @@ public:
     static std::vector<std::string> getFilteredListIn(const std::string& folder, const std::string& regex);
 };
 
-class XFileName {
+class XFileName
+{
 public:
     static std::string getFolder(const std::string& filename);
     static std::string stripPath(const std::string& filename);
     static std::string stripPathAndExt(const std::string& filename);
 
-    struct ImageSize { uint32_t width; uint32_t height; };
+    struct ImageSize
+    {
+        uint32_t width;
+        uint32_t height;
+    };
     static ImageSize getFirstFoundImageSize(const std::string& filename);
     static ImageSize getLastFoundImageSize(const std::string& filename);
 
@@ -52,6 +61,7 @@ public:
     static std::string getLastMatchByRegex(const std::string& filename, const std::string& regex);
 };
 
-}} // namespace algernon::file
+}  // namespace file
+}  // namespace algernon
 
-#endif // ALGERNON_FILE_XFILE_H_
+#endif  // ALGERNON_FILE_XFILE_H_

@@ -1,5 +1,5 @@
-#include "algernon/perf/xtracer.h"
-#include "algernon/log/xlogger.h"
+#include "perf/xtracer.h"
+#include "log/xlogger.h"
 
 #ifdef ALGERNON_OS_ANDROID
 #include <fcntl.h>
