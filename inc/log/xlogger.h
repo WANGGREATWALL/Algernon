@@ -196,75 +196,41 @@ inline void logPrint(Level level, const char* file, int line, const char* fmt, v
     }
 
     const bool needFlush = (level >= Level::Warn);
-#if defined(ALGERNON_OS_ANDROID)
-    const int  prio         = toAndroidPriority(level);
-    const bool shellEnabled = cfg.isShellPrintEnabled();
 
-    if (file == nullptr) {
-        // --- V / D / I ---
-        if (!shellEnabled) {
-            __android_log_vprint(prio, tag, fmt, args);
-            return;
-        }
-        char outBuf[896];
-        int  hdrLen =
-            clampLen(std::snprintf(outBuf, sizeof(outBuf), "[%s][%s] ", tag, levelTag(level)), (int)sizeof(outBuf));
-
-        va_list argsCopy;
-        va_copy(argsCopy, args);
-
-        int bodyLen =
-            clampLen(std::vsnprintf(outBuf + hdrLen, sizeof(outBuf) - hdrLen, fmt, args), (int)sizeof(outBuf) - hdrLen);
-
-        __android_log_vprint(prio, tag, fmt, argsCopy);
-        va_end(argsCopy);
-
-        {
-            std::lock_guard<std::mutex> lk(cfg.outputMutex());
-            std::fwrite(outBuf, 1, (size_t)(hdrLen + bodyLen), stdout);
-        }
-    } else {
-        // --- W / E / F ---
-        if (!shellEnabled) {
-            char bodyBuf[820];
-            std::vsnprintf(bodyBuf, sizeof(bodyBuf), fmt, args);
-            __android_log_print(prio, tag, "(%s:%d) %s", file, line, bodyBuf);
-            return;
-        }
-        char outBuf[896];
-        int  hdrLen =
-            clampLen(std::snprintf(outBuf, sizeof(outBuf), "[%s][%s] ", tag, levelTag(level)), (int)sizeof(outBuf));
-        int locLen    = clampLen(std::snprintf(outBuf + hdrLen, sizeof(outBuf) - hdrLen, "(%s:%d) ", file, line),
-                                 (int)sizeof(outBuf) - hdrLen);
-        int bodyStart = hdrLen + locLen;
-        int bodyLen   = clampLen(std::vsnprintf(outBuf + bodyStart, sizeof(outBuf) - bodyStart, fmt, args),
-                                 (int)sizeof(outBuf) - bodyStart);
-
-        __android_log_write(prio, tag, outBuf + hdrLen);
-
-        {
-            std::lock_guard<std::mutex> lk(cfg.outputMutex());
-            std::fwrite(outBuf, 1, (size_t)(bodyStart + bodyLen), stdout);
-            if (needFlush)
-                std::fflush(stdout);
-        }
-    }
-
-#else  // Desktop: macOS / Linux / Windows
     char outBuf[896];
-    int  prefixLen;
+    int  hdrLen = clampLen(std::snprintf(outBuf, sizeof(outBuf), "[%s][%s] ", tag, levelTag(level)), (int)sizeof(outBuf));
+    int  prefixLen = hdrLen;
     if (file != nullptr) {
-        prefixLen =
-            clampLen(std::snprintf(outBuf, sizeof(outBuf), "[%s][%s] (%s:%d) ", tag, levelTag(level), file, line),
-                     (int)sizeof(outBuf));
-    } else {
-        prefixLen =
-            clampLen(std::snprintf(outBuf, sizeof(outBuf), "[%s][%s] ", tag, levelTag(level)), (int)sizeof(outBuf));
+        prefixLen += clampLen(std::snprintf(outBuf + prefixLen, sizeof(outBuf) - prefixLen, "(%s:%d) ", file, line),
+                              (int)sizeof(outBuf) - prefixLen);
     }
     int bodyLen = clampLen(std::vsnprintf(outBuf + prefixLen, sizeof(outBuf) - prefixLen, fmt, args),
                            (int)sizeof(outBuf) - prefixLen);
     int outLen  = prefixLen + bodyLen;
 
+#if defined(ALGERNON_OS_ANDROID)
+    const int prio = toAndroidPriority(level);
+
+    // Android logcat automatically adds a newline. Strip it if present.
+    bool hasNewline = (outLen > prefixLen && outBuf[outLen - 1] == '\n');
+    if (hasNewline) {
+        outBuf[outLen - 1] = '\0';
+    }
+
+    // Write to logcat, skipping the "[tag][L] " part (hdrLen)
+    __android_log_write(prio, tag, outBuf + hdrLen);
+
+    if (hasNewline) {
+        outBuf[outLen - 1] = '\n';  // Restore for stdout
+    }
+
+    if (cfg.isShellPrintEnabled()) {
+        std::lock_guard<std::mutex> lk(cfg.outputMutex());
+        std::fwrite(outBuf, 1, (size_t)outLen, stdout);
+        if (needFlush)
+            std::fflush(stdout);
+    }
+#else  // Desktop: macOS / Linux / Windows
     {
         std::lock_guard<std::mutex> lk(cfg.outputMutex());
         if (cfg.isColorEnabled()) {

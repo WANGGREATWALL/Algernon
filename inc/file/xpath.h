@@ -16,14 +16,16 @@
  *   }
  */
 
-#include <string>
-#include <vector>
 #include <cstdint>
 #include <filesystem>
+#include <string>
+#include <vector>
 
-namespace algernon { namespace file {
+namespace algernon {
+namespace file {
 
-class XPath {
+class XPath
+{
 public:
     XPath() = default;
     XPath(const std::string& path) : mPath(path) {}
@@ -39,10 +41,14 @@ public:
 
     // -- Concatenation --
 
-    XPath operator/(const char* sub) const { return XPath(mPath / sub); }
-    XPath operator/(const std::string& sub) const { return XPath(mPath / sub); }
-    XPath operator/(const XPath& sub) const { return XPath(mPath / sub.mPath); }
-    XPath& operator/=(const std::string& sub) { mPath /= sub; return *this; }
+    XPath  operator/(const char* sub) const { return XPath(mPath / sub); }
+    XPath  operator/(const std::string& sub) const { return XPath(mPath / sub); }
+    XPath  operator/(const XPath& sub) const { return XPath(mPath / sub.mPath); }
+    XPath& operator/=(const std::string& sub)
+    {
+        mPath /= sub;
+        return *this;
+    }
 
     // -- Decomposition --
 
@@ -60,10 +66,10 @@ public:
 
     // -- Queries --
 
-    bool exists() const { return std::filesystem::exists(mPath); }
-    bool isFile() const { return std::filesystem::is_regular_file(mPath); }
-    bool isDirectory() const { return std::filesystem::is_directory(mPath); }
-    bool isEmpty() const { return mPath.empty(); }
+    bool     exists() const { return std::filesystem::exists(mPath); }
+    bool     isFile() const { return std::filesystem::is_regular_file(mPath); }
+    bool     isDirectory() const { return std::filesystem::is_directory(mPath); }
+    bool     isEmpty() const { return mPath.empty(); }
     uint64_t fileSize() const { return std::filesystem::file_size(mPath); }
 
     // -- Directory operations --
@@ -96,15 +102,13 @@ public:
     // -- Path transformations --
 
     XPath absolute() const { return XPath(std::filesystem::absolute(mPath)); }
-    XPath relative(const XPath& base) const {
-        return XPath(std::filesystem::relative(mPath, base.mPath));
-    }
+    XPath relative(const XPath& base) const { return XPath(std::filesystem::relative(mPath, base.mPath)); }
 
     // -- Comparison --
 
     bool operator==(const XPath& other) const { return mPath == other.mPath; }
     bool operator!=(const XPath& other) const { return mPath != other.mPath; }
-    bool operator<(const XPath& other) const  { return mPath < other.mPath; }
+    bool operator<(const XPath& other) const { return mPath < other.mPath; }
 
     /** @brief Access underlying std::filesystem::path. */
     const std::filesystem::path& native() const { return mPath; }
@@ -113,6 +117,7 @@ private:
     std::filesystem::path mPath;
 };
 
-}} // namespace algernon::file
+}  // namespace file
+}  // namespace algernon
 
-#endif // ALGERNON_FILE_XPATH_H_
+#endif  // ALGERNON_FILE_XPATH_H_

@@ -3,11 +3,13 @@ Language: Cpp
 BasedOnStyle: Google
 
 # --- 基础格式与标准 ---
-Standard: c++11                             # 明确 C++ 标准，确保新特性解析正确
+Standard: c++17                             # C++17 标准
 ColumnLimit: 120                            # 稍微放宽到 120，适应现代宽屏
 IndentWidth: 4                              # 4 空格缩进，层级更分明
 TabWidth: 4                                 # Tab 宽度等同于缩进
 UseTab: Never                               # 禁用 Tab，纯空格缩进
+MaxEmptyLinesToKeep: 2                      # 允许最多保留2个空行 (类定义之间手动空两行)
+SeparateDefinitionBlocks: Leave              # 保留手动控制的空行 (不自动增删)
 
 # --- 大括号与换行逻辑 ---
 BreakBeforeBraces: Custom
@@ -26,7 +28,7 @@ BraceWrapping:
   BeforeWhile: false                        # do-while 的 while 前不换行
 
 # --- 单行折叠规则 ---
-AllowShortFunctionsOnASingleLine: Inline    # 仅允许类内部的简短内联函数保持单行
+AllowShortFunctionsOnASingleLine: All       # 允许所有短函数保持单行 (如 constexpr 单行函数)
 AllowShortIfStatementsOnASingleLine: false  # 禁止 if 语句折叠到单行
 AllowShortLoopsOnASingleLine: false         # 禁止循环语句折叠到单行
 AllowShortCaseLabelsOnASingleLine: true     # 允许将 case 和 return 写在同一行

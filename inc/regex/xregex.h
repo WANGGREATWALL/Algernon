@@ -20,11 +20,12 @@
  *   // parts = {"a", "b", "", "c"}
  */
 
+#include <regex>
 #include <string>
 #include <vector>
-#include <regex>
 
-namespace algernon { namespace regex {
+namespace algernon {
+namespace regex {
 
 /**
  * @brief Check if pattern matches anywhere in the string.
@@ -74,8 +75,8 @@ std::string replaceAll(const std::string& content, const std::string& pattern, c
  * @brief Replace the Nth match (0-indexed).
  * @example replaceNth("aa bb aa", "aa", "cc", 1) => "aa bb cc"
  */
-std::string replaceNth(const std::string& content, const std::string& pattern,
-                        const std::string& replacement, int index);
+std::string replaceNth(const std::string& content, const std::string& pattern, const std::string& replacement,
+                       int index);
 
 /**
  * @brief Split string by regex pattern.
@@ -83,6 +84,7 @@ std::string replaceNth(const std::string& content, const std::string& pattern,
  */
 std::vector<std::string> split(const std::string& content, const std::string& pattern);
 
-}} // namespace algernon::regex
+}  // namespace regex
+}  // namespace algernon
 
-#endif // ALGERNON_REGEX_XREGEX_H_
+#endif  // ALGERNON_REGEX_XREGEX_H_
