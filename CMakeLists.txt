@@ -49,6 +49,7 @@ set(ALGERNON_SOURCES
     src/file/xfile.cpp
     src/regex/xregex.cpp
     src/json/xjson.cpp
+    src/log/xlogger.cpp
     src/cv/ximage.cpp
     src/perf/xtimer.cpp
     src/perf/xtracer.cpp
