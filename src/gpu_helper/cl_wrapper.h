@@ -1,20 +1,20 @@
 /**
- * The OpenCL kernel code is written in a .cl file. To convert the kernel.cl file into a kernel.h file 
+ * The OpenCL kernel code is written in a .cl file. To convert the kernel.cl file into a kernel.h file
  * and obtain the kernel string for OpenCL compilation, the following command can be used in the shell:
- * 
+ *
  * pathCur=$(pwd)
  * cd ${pathCur}/../../src/common_utils/
  * xxd -i portrait_style.cl portrait_style_kernel.h
  * cd ${pathCur}/
- * 
+ *
  */
 
 #ifndef __CL_WRAPPER_H__
 #define __CL_WRAPPER_H__
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "cl_symbols.h"
 #include "cv/ximage.h"
@@ -35,8 +35,8 @@ size_t getImagePitch(const cl::Image& image);
 size_t getImageDepth(const cl::Image& image);
 
 bool isValid(const cl::Image& image);
-bool isFormat(const cl::Image& image, const cl_image_format& format={CL_R, CL_UNORM_INT8});
-bool isSize(const cl::Image& image, size_t width, size_t height, size_t depth=0);
+bool isFormat(const cl::Image& image, const cl_image_format& format = {CL_R, CL_UNORM_INT8});
+bool isSize(const cl::Image& image, size_t width, size_t height, size_t depth = 0);
 bool isSameSize(const cl::Image& image0, const cl::Image& image1);
 bool isSameFormat(const cl::Image& image0, const cl::Image& image1);
 bool isSameSizeAndFormat(const cl::Image& image0, const cl::Image& image1);
@@ -44,29 +44,43 @@ bool isSameSizeAndFormat(const cl::Image& image0, const cl::Image& image1);
 std::string info(const cl::Image& image);
 
 
-class CLWrapper {
+class CLWrapper
+{
 public:
     CLWrapper(std::string folderBinary, std::string nameBinary);
     ~CLWrapper();
 
-    CLWrapper(const CLWrapper&) = delete;
+    CLWrapper(const CLWrapper&)            = delete;
     CLWrapper& operator=(const CLWrapper&) = delete;
 
-    int init(bool enableProfiling=false);
-    int build(const std::string& kernelString, const std::string optionsCompile="-cl-std=CL2.0 -cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros -cl-unsafe-math-optimizations");
+    int init(bool enableProfiling = false);
+    int build(
+        const std::string& kernelString,
+        const std::string  optionsCompile =
+            "-cl-std=CL2.0 -cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros -cl-unsafe-math-optimizations");
     int createKernels();
 
-    int createBuffer(cl::Buffer& dst, const cv::Image& image, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
-    int createBuffer(cl::Buffer& dst, void* data, size_t sizeInByte, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createBuffer(cl::Buffer& dst, const cv::Image& image,
+                     cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createBuffer(cl::Buffer& dst, void* data, size_t sizeInByte,
+                     cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
 
-    int createImage2D(cl::Image2D& dst, const cv::Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
-    int createImage2D(cl::Image2D& dst, void* data, int width, int height, cl::ImageFormat format={CL_RG, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
-    int createImage2D(cl::Image2D& dst, int width, int height, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_WRITE);
+    int createImage2D(cl::Image2D& dst, const cv::Image& image, cl::ImageFormat format = {CL_R, CL_UNORM_INT8},
+                      cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage2D(cl::Image2D& dst, void* data, int width, int height,
+                      cl::ImageFormat format = {CL_RG, CL_UNORM_INT8},
+                      cl_mem_flags    flags  = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage2D(cl::Image2D& dst, int width, int height, cl::ImageFormat format = {CL_R, CL_UNORM_INT8},
+                      cl_mem_flags flags = CL_MEM_READ_WRITE);
 
-    int createImage3D(cl::Image3D& dst, const cv::Image& image, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
-    int createImage3D(cl::Image3D& dst, void* data, int width, int height, int depth, cl::ImageFormat format={CL_RG, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
-    int createImage3D(cl::Image3D& dst, int width, int height, int depth, cl::ImageFormat format={CL_R, CL_UNORM_INT8}, cl_mem_flags flags=CL_MEM_READ_WRITE);
-    
+    int createImage3D(cl::Image3D& dst, const cv::Image& image, cl::ImageFormat format = {CL_R, CL_UNORM_INT8},
+                      cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage3D(cl::Image3D& dst, void* data, int width, int height, int depth,
+                      cl::ImageFormat format = {CL_RG, CL_UNORM_INT8},
+                      cl_mem_flags    flags  = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
+    int createImage3D(cl::Image3D& dst, int width, int height, int depth,
+                      cl::ImageFormat format = {CL_R, CL_UNORM_INT8}, cl_mem_flags flags = CL_MEM_READ_WRITE);
+
     int copyImage2D(cl::Image2D& dst, const cl::Image2D& src);
 
     int readImage2D(cv::Image& dst, const cl::Image2D& image, bool block);
@@ -80,35 +94,42 @@ public:
     int mapImage2D(cv::Image& dst, const cl::Image2D& image);
     int mapImage2D(cv::Image& dst, const cl::Image2D& plane0, const cl::Image2D& plane1);
 
-    void* mallocSVM(size_t sizeInByte, size_t align=64, cl_mem_flags flags=CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER);
-    int freeSVM(void* data);
+    void* mallocSVM(size_t sizeInByte, size_t align = 64,
+                    cl_mem_flags flags = CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER);
+    int   freeSVM(void* data);
 
-    CLWrapper& setNDRange(cl::NDRange global, cl::NDRange local={1,1}, cl::NDRange offset={0,0});
+    CLWrapper& setNDRange(cl::NDRange global, cl::NDRange local = {1, 1}, cl::NDRange offset = {0, 0});
 
     template <typename... Args>
-    int enqueue(std::string nameKernel, cl::Event* event=nullptr, Args... args) {
+    int enqueue(std::string nameKernel, cl::Event* event = nullptr, Args... args)
+    {
         cl::Kernel kernel;
-        int retGetKernel = getKernel(kernel, nameKernel);
-        XASSERT_RET(retGetKernel == err::kSuccess, retGetKernel);
+        int        retGetKernel = getKernel(kernel, nameKernel);
+        XCHECK_WITH_RET(retGetKernel == err::kSuccess, retGetKernel);
 
-        int idx = 0;
-        std::vector<int> setargs{ [&] { return kernel.setArg(idx++, args); }()... };
+        int              idx = 0;
+        std::vector<int> setargs{[&] { return kernel.setArg(idx++, args); }()...};
 
         for (int i = 0; i < setargs.size(); ++i) {
-            XASSERT_INFO(setargs[i] == CL_SUCCESS, err::kErrorInvalidParam, "failed to setargs[%d]: %s!", i, clErrorInfo(setargs[i]).c_str());
+            XCHECK_WITH_MSG(setargs[i] == CL_SUCCESS, err::kErrorInvalidParam, "failed to setargs[%d]: %s!", i,
+                            clErrorInfo(setargs[i]).c_str());
         }
 
         if (event) {
-            int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, event);
-            XASSERT_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
+            int retEnqueueNDRangeKernel =
+                mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, event);
+            XCHECK_WITH_MSG(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s",
+                            clErrorInfo(retEnqueueNDRangeKernel).c_str());
             mEvents.emplace_back(nameKernel, *event);
         } else {
             cl::Event eventInner;
-            int retEnqueueNDRangeKernel = mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, &eventInner);
-            XASSERT_INFO(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s", clErrorInfo(retEnqueueNDRangeKernel).c_str());
+            int       retEnqueueNDRangeKernel =
+                mCommandQueue.enqueueNDRangeKernel(kernel, mOffset, mGlobal, mLocal, nullptr, &eventInner);
+            XCHECK_WITH_MSG(retEnqueueNDRangeKernel == CL_SUCCESS, retEnqueueNDRangeKernel, "clError: %s",
+                            clErrorInfo(retEnqueueNDRangeKernel).c_str());
             mEvents.emplace_back(nameKernel, eventInner);
         }
-        
+
         return err::kSuccess;
     }
 
@@ -133,11 +154,13 @@ public:
 
     int clearAndSyncEvents();
 
-    int querySupportedImageFormats(const cl_mem_object_type object=CL_MEM_OBJECT_IMAGE2D, const cl_mem_flags flags=CL_MEM_READ_ONLY) const;
+    int querySupportedImageFormats(const cl_mem_object_type object = CL_MEM_OBJECT_IMAGE2D,
+                                   const cl_mem_flags       flags  = CL_MEM_READ_ONLY) const;
     int querySVMCapabilities() const;
 
 private:
-    struct CLEvent {
+    struct CLEvent
+    {
         CLEvent(const std::string& _name, const cl::Event& _event) : name(_name), event(_event) {}
 
         std::string name;
@@ -146,8 +169,8 @@ private:
 
     int getPlatform();
     int getDevice();
-    int createContext(cl_context_properties* properties=nullptr);
-    int createCommandQueue(cl_command_queue_properties queue_properties=0);
+    int createContext(cl_context_properties* properties = nullptr);
+    int createCommandQueue(cl_command_queue_properties queue_properties = 0);
     int createProgramWithKernelString(const std::string& kernel);
     int buildProgram(const std::string& option);
     int getKernel(cl::Kernel& kernel, const std::string& name);
@@ -174,13 +197,13 @@ private:
 
     bool mEnableProfiling;
 
-    std::vector<cl::Platform> mPlatforms;
-    std::vector<cl::Device> mDevices;
-    cl::Context mContext;
-    cl::CommandQueue mCommandQueue;
-    cl::Program mProgram;
+    std::vector<cl::Platform>         mPlatforms;
+    std::vector<cl::Device>           mDevices;
+    cl::Context                       mContext;
+    cl::CommandQueue                  mCommandQueue;
+    cl::Program                       mProgram;
     std::map<std::string, cl::Kernel> mKernels;
-    std::vector<CLEvent> mEvents;
+    std::vector<CLEvent>              mEvents;
 
     std::string mStringKernel;
     std::string mStringBinary;
@@ -195,6 +218,6 @@ private:
     cl::NDRange mLocal;
 };
 
-} // namespace gpu
+}  // namespace gpu
 
-#endif // __CL_WRAPPER_H__
+#endif  // __CL_WRAPPER_H__

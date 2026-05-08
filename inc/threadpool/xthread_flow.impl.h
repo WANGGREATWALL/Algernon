@@ -1,26 +1,28 @@
 #ifndef ALGERNON_THREADPOOL_XTHREAD_FLOW_IMPL_H_
 #define ALGERNON_THREADPOOL_XTHREAD_FLOW_IMPL_H_
 
-#include "xthread_flow.h"
 #include "log/xlogger.h"
+#include "xthread_flow.h"
 
-namespace algernon { namespace framework {
+namespace algernon {
+namespace framework {
 
 inline XFlow::XFlow() = default;
 
 inline XFlow::~XFlow() = default;
 
-inline int XFlow::init(size_t workers, size_t pipelines) {
-    XASSERT_RET(!mInited, kErrorAlreadyExists);
+inline int XFlow::init(size_t workers, size_t pipelines)
+{
+    XCHECK_WITH_RET(!mInited, kErrorAlreadyExists);
     mWorkers   = std::make_unique<XThreadpool>(workers);
     mPipelines = std::make_unique<XThreadpool>(pipelines);
-    mInited = true;
+    mInited    = true;
     return kSuccess;
 }
 
-inline int XFlow::parallelizeTiledTasks(size_t range, size_t tile,
-                                         std::function<void(size_t, size_t)>&& f) {
-    XASSERT_RET(mInited, kErrorNotReady);
+inline int XFlow::parallelizeTiledTasks(size_t range, size_t tile, std::function<void(size_t, size_t)>&& f)
+{
+    XCHECK_WITH_RET(mInited, kErrorNotReady);
 
     std::vector<std::future<void>> futures;
     for (size_t i = 0; i < range; i += tile) {
@@ -33,11 +35,13 @@ inline int XFlow::parallelizeTiledTasks(size_t range, size_t tile,
 }
 
 template <class F, class... Args>
-auto XFlow::addPipeline(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>> {
-    XASSERT(mInited);
+auto XFlow::addPipeline(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>>
+{
+    XCHECK(mInited);
     return mPipelines->enqueue(std::forward<F>(f), std::forward<Args>(args)...);
 }
 
-}} // namespace algernon::framework
+}  // namespace framework
+}  // namespace algernon
 
-#endif // ALGERNON_THREADPOOL_XTHREAD_FLOW_IMPL_H_
+#endif  // ALGERNON_THREADPOOL_XTHREAD_FLOW_IMPL_H_

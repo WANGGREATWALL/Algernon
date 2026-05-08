@@ -1,107 +1,329 @@
+#if 1  // ENABLE_TEST_XLOGGER
+
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "log/xlogger.h"
-#include "log/xerror.h"
 
-using namespace algernon::log;
+// ---------------------------------------------------------------------------
+// Fixture
+// ---------------------------------------------------------------------------
 
-// ── Level Filtering ──
-
-TEST(XLogger, FilteredLevelProducesNoOutput)
+class XLoggerTest : public ::testing::Test
 {
-    Config::get().setTag("Test");
-    Config::get().setLevel(Level::Error);
+protected:
+    void SetUp() override
+    {
+        log::Config::get().setTag("XLoggerTest");
+        log::Config::get().setLevel(log::Level::Verbose);
+        log::Config::get().setColorEnabled(true);
+#if ALGERNON_OS_ANDROID
+        // Default target is logcat; enable shell so CaptureStdout can intercept.
+        log::Config::get().setShellPrintEnabled(true);
+#endif
+    }
+};
 
-    // V/D/I/W should be silently discarded (no crash, no output).
-    XLOG_V("verbose msg %d\n", 1);
-    XLOG_D("debug msg %d\n", 2);
-    XLOG_I("info msg %d\n", 3);
-    XLOG_W("warn msg %d\n", 4);
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-    // Restore default.
-    Config::get().setLevel(Level::Info);
+/// Capture everything written to stdout during fn().
+static std::string captureStdout(const std::function<void()>& fn)
+{
+    testing::internal::CaptureStdout();
+    fn();
+    std::fflush(stdout);
+    return testing::internal::GetCapturedStdout();
 }
 
-TEST(XLogger, SilentLevelSuppressesAll)
+/// Count non-overlapping occurrences of sub in s.
+static int countOccurrences(const std::string& s, const std::string& sub)
 {
-    Config::get().setLevel(Level::Silent);
-    XLOG_F("this fatal should be suppressed\n");
-    Config::get().setLevel(Level::Info);
+    int  cnt = 0;
+    auto pos = s.find(sub);
+    while (pos != std::string::npos) {
+        ++cnt;
+        pos = s.find(sub, pos + sub.size());
+    }
+    return cnt;
 }
 
-// ── Tag Management ──
-
-TEST(XLogger, SetAndGetTag)
+// XCHECK_WITH_* require a function return context.
+static int fnCheckRet(bool cond)
 {
-    Config::get().setTag("MyApp");
-    EXPECT_STREQ(Config::get().getTag(), "MyApp");
-
-    Config::get().setTag(nullptr);
-    EXPECT_STREQ(Config::get().getTag(), "unknown");
+    XCHECK_WITH_RET(cond, -1);
+    return 0;
 }
-
-TEST(XLogger, TagTruncation)
+static int fnCheckMsg(int w)
 {
-    // Tag longer than 63 chars should be truncated, not crash.
-    std::string longTag(128, 'A');
-    Config::get().setTag(longTag.c_str());
-
-    const char* tag = Config::get().getTag();
-    EXPECT_EQ(std::strlen(tag), 63u);
-}
-
-// ── All Levels Output Without Crash ──
-
-TEST(XLogger, AllLevelsDoNotCrash)
-{
-    Config::get().setTag("CrashTest");
-    Config::get().setLevel(Level::Verbose);
-
-    XLOG_V("verbose %s\n", "ok");
-    XLOG_D("debug %d\n", 42);
-    XLOG_I("info %.2f\n", 3.14);
-    XLOG_W("warn %s\n", "attention");
-    XLOG_E("error code=%d\n", -1);
-    XLOG_F("fatal %s\n", "critical");
-
-    Config::get().setLevel(Level::Info);
-}
-
-// ── Color Toggle ──
-
-TEST(XLogger, ColorToggle)
-{
-    EXPECT_FALSE(Config::get().isColorEnabled());
-    Config::get().setColorEnabled(true);
-    EXPECT_TRUE(Config::get().isColorEnabled());
-
-    XLOG_I("this line should have color\n");
-
-    Config::get().setColorEnabled(false);
-    EXPECT_FALSE(Config::get().isColorEnabled());
-}
-
-// ── XCHECK Macros ──
-
-static int checkHelper(bool pass)
-{
-    XCHECK_WITH_RET(pass, -1);
+    XCHECK_WITH_MSG(w > 0, -2, "bad width %d\n", w);
     return 0;
 }
 
-TEST(XLogger, XCheckWithRet)
+// ===========================================================================
+// 1. Configuration
+// ===========================================================================
+
+TEST_F(XLoggerTest, Config)
 {
-    EXPECT_EQ(checkHelper(true), 0);
-    EXPECT_EQ(checkHelper(false), -1);
+    log::Config::get().setTag("XLoggerTest-Config");
+    EXPECT_STREQ(log::Config::get().getTag(), "XLoggerTest-Config");
+
+    // null tag falls back to "unknown"
+    log::Config::get().setTag(nullptr);
+    EXPECT_STREQ(log::Config::get().getTag(), "unknown");
+
+    log::Config::get().setLevel(log::Level::Fatal);
+    EXPECT_EQ(log::Config::get().getLevel(), log::Level::Fatal);
+
+    log::Config::get().setColorEnabled(true);
+    EXPECT_TRUE(log::Config::get().isColorEnabled());
+    log::Config::get().setColorEnabled(false);
+    EXPECT_FALSE(log::Config::get().isColorEnabled());
 }
 
-static int checkMsgHelper(int val)
+// ===========================================================================
+// 2. Level filtering
+// ===========================================================================
+
+TEST_F(XLoggerTest, LevelFilter)
 {
-    XCHECK_WITH_MSG(val > 0, -99, "val must be positive, got %d\n", val);
-    return val;
+    log::Config::get().setLevel(log::Level::Warn);
+
+    const std::string suppressed = captureStdout([] {
+        XLOG_V("v\n");
+        XLOG_D("d\n");
+        XLOG_I("i\n");
+    });
+    EXPECT_TRUE(suppressed.empty()) << "V/D/I must be suppressed below Warn";
+
+    const std::string passed = captureStdout([] {
+        XLOG_W("warn\n");
+        XLOG_E("error\n");
+        XLOG_F("fatal\n");
+    });
+    EXPECT_NE(passed.find("warn"), std::string::npos);
+    EXPECT_NE(passed.find("error"), std::string::npos);
+    EXPECT_NE(passed.find("fatal"), std::string::npos);
+
+    log::Config::get().setLevel(log::Level::Silent);
+    const std::string silent = captureStdout([] {
+        XLOG_W("w\n");
+        XLOG_E("e\n");
+        XLOG_F("f\n");
+    });
+    EXPECT_TRUE(silent.empty()) << "Silent must suppress all levels";
 }
 
-TEST(XLogger, XCheckWithMsg)
+// ===========================================================================
+// 3. Output format
+// ===========================================================================
+
+TEST_F(XLoggerTest, Format)
 {
-    EXPECT_EQ(checkMsgHelper(10), 10);
-    EXPECT_EQ(checkMsgHelper(-5), -99);
+    log::Config::get().setTag("Fmt");
+
+    log::Config::get().setColorEnabled(false);
+
+    // V/D/I: "[tag][L] message", no file:line
+    const std::string outI = captureStdout([] { XLOG_I("hello %d\n", 42); });
+    EXPECT_NE(outI.find("[Fmt][I]"), std::string::npos);
+    EXPECT_NE(outI.find("hello 42"), std::string::npos);
+    EXPECT_EQ(outI.find("test_xlogger"), std::string::npos) << "I must not carry location";
+
+    // W/E/F: "[tag][L] (file:line) message"
+    const std::string outW = captureStdout([] { XLOG_W("warn msg\n"); });
+    EXPECT_NE(outW.find("[Fmt][W]"), std::string::npos);
+    EXPECT_NE(outW.find("warn msg"), std::string::npos);
+    const auto pos = outW.find('(');
+    ASSERT_NE(pos, std::string::npos) << "W must carry location '('";
+    EXPECT_NE(outW.find(':', pos), std::string::npos) << "location must contain ':'";
+
+    // Tag change must be reflected immediately.
+    log::Config::get().setTag("New");
+    const std::string outNew = captureStdout([] { XLOG_I("x\n"); });
+    EXPECT_NE(outNew.find("[New]"), std::string::npos);
+    EXPECT_EQ(outNew.find("[Fmt]"), std::string::npos);
 }
+
+// ===========================================================================
+// 4. Color output
+// ===========================================================================
+// Verified on all platforms including Android (shellEnabled=true in SetUp).
+// logcat output is not colorized — ANSI escapes are for the shell/stdout path only.
+
+TEST_F(XLoggerTest, ColorOutput)
+{
+    log::Config::get().setTag("XLoggerTest-ColorOutput");
+    log::Config::get().setColorEnabled(true);
+
+    // V/D/I have no badge color; use W (yellow) to verify ANSI is present.
+    const std::string outColor = captureStdout([] { XLOG_W("colored\n"); });
+    EXPECT_NE(outColor.find("\033["), std::string::npos) << "Expected ANSI escape in [W] badge";
+    EXPECT_NE(outColor.find("\033[0m"), std::string::npos) << "Expected ANSI reset after [W] badge";
+    EXPECT_NE(outColor.find("colored"), std::string::npos);
+
+    log::Config::get().setColorEnabled(false);
+    const std::string outPlain = captureStdout([] { XLOG_W("plain\n"); });
+    EXPECT_EQ(outPlain.find("\033["), std::string::npos) << "No ANSI escape when color=false";
+    EXPECT_NE(outPlain.find("plain"), std::string::npos);
+}
+
+// ===========================================================================
+// 5. XCHECK macros
+// ===========================================================================
+
+TEST_F(XLoggerTest, CheckMacros)
+{
+    // Passing condition: no output, correct return value.
+    EXPECT_EQ(fnCheckRet(true), 0);
+    EXPECT_EQ(fnCheckMsg(5), 0);
+
+    // XCHECK_WITH_RET fail: logs "check failed", returns -1, carries location.
+    int               retRet = 0;
+    const std::string outRet = captureStdout([&] { retRet = fnCheckRet(false); });
+    EXPECT_EQ(retRet, -1);
+    EXPECT_NE(outRet.find("check failed"), std::string::npos);
+    EXPECT_NE(outRet.find('('), std::string::npos) << "must carry location";
+
+    // XCHECK_WITH_MSG fail: logs custom message with arg, returns -2.
+    int               retMsg = 0;
+    const std::string outMsg = captureStdout([&] { retMsg = fnCheckMsg(-7); });
+    EXPECT_EQ(retMsg, -2);
+    EXPECT_NE(outMsg.find("bad width"), std::string::npos);
+    EXPECT_NE(outMsg.find("-7"), std::string::npos);
+    EXPECT_NE(outMsg.find('('), std::string::npos) << "must carry location";
+}
+
+// ===========================================================================
+// 6. Newline correctness on stdout
+// ===========================================================================
+//
+// Paths verified here (via CaptureStdout):
+//   Desktop                        : fwrite writes exactly what was formatted.
+//   Android shellEnabled=true      : '\n' stripped before __android_log_write,
+//                                    restored for fwrite — one '\n' per line.
+//   Android shellEnabled=false     : stdout empty (all output goes to logcat).
+//
+// logcat newline behaviour (see AndroidLogcatNewlineProbe):
+//   Modern logd (API 21+) strips trailing '\n' from every log record before
+//   storage, so no double blank lines appear regardless of level or path.
+//   The '\n'-strip in the W/E/F fast path is therefore redundant but harmless.
+
+TEST_F(XLoggerTest, NewlineOnStdout)
+{
+    log::Config::get().setTag("XLoggerTest-NewlineOnStdout");
+
+    // Each message has one '\n'; stdout must show exactly that — no doubling.
+    const std::string outVDI = captureStdout([] {
+        XLOG_V("verbose\n");
+        XLOG_D("debug\n");
+        XLOG_I("info\n");
+    });
+    EXPECT_EQ(countOccurrences(outVDI, "\n"), 3) << "V/D/I: expected 3 newlines";
+    EXPECT_EQ(countOccurrences(outVDI, "\n\n"), 0) << "V/D/I: double newline on stdout";
+
+    const std::string outWEF = captureStdout([] {
+        XLOG_W("warn\n");
+        XLOG_E("error\n");
+        XLOG_F("fatal\n");
+    });
+    EXPECT_EQ(countOccurrences(outWEF, "\n"), 3) << "W/E/F: expected 3 newlines";
+    EXPECT_EQ(countOccurrences(outWEF, "\n\n"), 0) << "W/E/F: double newline on stdout";
+
+    // Message without '\n' must not gain one.
+    const std::string outNone = captureStdout([] { XLOG_I("no-newline"); });
+    EXPECT_EQ(countOccurrences(outNone, "\n"), 0) << "trailing newline must not be added";
+
+#if ALGERNON_OS_ANDROID
+    // shellEnabled=false: output goes to logcat only — stdout must be empty.
+    log::Config::get().setShellPrintEnabled(false);
+    const std::string outLogcatOnly = captureStdout([] {
+        XLOG_V("v\n");
+        XLOG_D("d\n");
+        XLOG_I("i\n");
+        XLOG_W("w\n");
+        XLOG_E("e\n");
+        XLOG_F("f\n");
+    });
+    EXPECT_TRUE(outLogcatOnly.empty()) << "shellEnabled=false: stdout must be empty";
+    log::Config::get().setShellPrintEnabled(true);
+#endif
+}
+
+// ===========================================================================
+// 7. Android logcat newline probe  (manual verification)
+// ===========================================================================
+//
+// Emits messages with trailing '\n' to logcat (shellEnabled=false).
+// Modern logd (API 21+) strips trailing '\n' automatically — no double blank
+// lines are expected for any level.
+//
+// Verify with:  adb logcat -s XLOG_NL_CHK
+//   All entries should appear as single lines with no spurious blank lines.
+
+#if ALGERNON_OS_ANDROID
+TEST_F(XLoggerTest, AndroidLogcatNewlineProbe)
+{
+    log::Config::get().setTag("XLOG_NL_CHK");
+    log::Config::get().setShellPrintEnabled(false);
+
+    XLOG_V("V with trailing newline — logd strips it, no blank line\n");
+    XLOG_D("D with trailing newline — logd strips it, no blank line\n");
+    XLOG_I("I with trailing newline — logd strips it, no blank line\n");
+    XLOG_W("W with trailing newline — stripped by both code and logd\n");
+    XLOG_E("E with trailing newline — stripped by both code and logd\n");
+    XLOG_F("F with trailing newline — stripped by both code and logd\n");
+
+    log::Config::get().setShellPrintEnabled(true);
+    SUCCEED() << "Inspect logcat manually: adb logcat -s XLOG_NL_CHK";
+}
+#endif
+
+// ===========================================================================
+// 8. Thread safety
+// ===========================================================================
+
+TEST_F(XLoggerTest, ThreadSafety)
+{
+    constexpr int kThreads = 8;
+    constexpr int kIter    = 200;
+
+    // Disable color so every line starts with '[' — ANSI escapes would
+    // prepend '\033[' and make the prefix check meaningless.
+    log::Config::get().setColorEnabled(false);
+
+    testing::internal::CaptureStdout();
+    {
+        std::vector<std::thread> threads;
+        threads.reserve(kThreads);
+        for (int i = 0; i < kThreads; ++i) {
+            threads.emplace_back([i] {
+                for (int j = 0; j < kIter; ++j) {
+                    XLOG_I("t=%d i=%d\n", i, j);
+                    XLOG_W("t=%d w=%d\n", i, j);
+                }
+            });
+        }
+        for (auto& t : threads)
+            t.join();
+    }
+    std::fflush(stdout);
+    const std::string out = testing::internal::GetCapturedStdout();
+
+    // Garbled interleaving produces lines not starting with '['.
+    std::istringstream ss(out);
+    std::string        line;
+    int                badLines = 0;
+    while (std::getline(ss, line)) {
+        if (!line.empty() && line[0] != '[')
+            ++badLines;
+    }
+    EXPECT_EQ(badLines, 0) << badLines << " line(s) did not start with '['";
+}
+
+#endif  // ENABLE_TEST_XLOGGER

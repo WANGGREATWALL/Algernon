@@ -1,8 +1,8 @@
 #ifndef CL_SYMBOLS_H_
 #define CL_SYMBOLS_H_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "log/xlogger.h"
 #include "sys/xdlib.h"
@@ -38,9 +38,11 @@ namespace gpu {
  * Usage in trampoline functions (cl_symbols.cpp):
  *   return XDLIB_GET(gpu::CLSymbols::lib(), clSomeFunc)(args...);
  */
-class CLSymbols {
+class CLSymbols
+{
 public:
-    static algernon::sys::XDLib& lib() {
+    static algernon::sys::XDLib& lib()
+    {
         static CLSymbols instance;
         return instance.mLib;
     }
@@ -48,41 +50,38 @@ public:
     ~CLSymbols() = default;
 
 private:
-    CLSymbols() {
+    CLSymbols()
+    {
         int ret = mLib.load(mLibPaths);
-        XASSERT(ret == err::kSuccess);
+        XCHECK(ret == err::kSuccess);
     }
 
     algernon::sys::XDLib mLib;
 
-    std::vector<std::string> mLibPaths = {
-        "/vendor/lib64/libOpenCL.so",
+    std::vector<std::string> mLibPaths = {"/vendor/lib64/libOpenCL.so",
 
-        // __aarch64__
-        "/system/vendor/lib64/libOpenCL.so",
-        "/system/lib64/libOpenCL.so",
+                                          // __aarch64__
+                                          "/system/vendor/lib64/libOpenCL.so", "/system/lib64/libOpenCL.so",
 
-        // __aarch32__
-        "/system/vendor/lib/libOpenCL.so",
-        "/system/lib/libOpenCL.so",
+                                          // __aarch32__
+                                          "/system/vendor/lib/libOpenCL.so", "/system/lib/libOpenCL.so",
 
-        // windows default
-        "C:/Windows/System32/opencl.dll",
-        
-        // NVIDIA CUDA
-        "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.6/bin/OpenCL.dll",
-        "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/bin/OpenCL.dll",
-        
-        // AMD APP SDK
-        "C:/Program Files (x86)/AMD APP/bin/x86_64/OpenCL.dll",
-        "C:/Program Files (x86)/AMD APP/bin/x86/OpenCL.dll",
-        
-        // Intel SDK
-        "C:/Program Files (x86)/Intel/OpenCL SDK/6.3/bin/x64/OpenCL.dll",
-        "C:/Program Files (x86)/Intel/OpenCL SDK/6.3/bin/x86/OpenCL.dll"
-    };
+                                          // windows default
+                                          "C:/Windows/System32/opencl.dll",
+
+                                          // NVIDIA CUDA
+                                          "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.6/bin/OpenCL.dll",
+                                          "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/bin/OpenCL.dll",
+
+                                          // AMD APP SDK
+                                          "C:/Program Files (x86)/AMD APP/bin/x86_64/OpenCL.dll",
+                                          "C:/Program Files (x86)/AMD APP/bin/x86/OpenCL.dll",
+
+                                          // Intel SDK
+                                          "C:/Program Files (x86)/Intel/OpenCL SDK/6.3/bin/x64/OpenCL.dll",
+                                          "C:/Program Files (x86)/Intel/OpenCL SDK/6.3/bin/x86/OpenCL.dll"};
 };
 
-} // namespace gpu
+}  // namespace gpu
 
-#endif // CL_SYMBOLS_H_
+#endif  // CL_SYMBOLS_H_
