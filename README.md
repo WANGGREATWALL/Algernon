@@ -1,49 +1,54 @@
 <p align="center">
 <code>
-   ------    ----    ---- -----------     ------    
-  ********   ****    **** ***********    ********   
- ----------  ----    ---- ----    ---   ----------  
-****    **** ****    **** *********    ****    **** 
------------- ----    ---- ---------    ------------ 
-************ ************ ****  ****   ************ 
-----    ---- ------------ ----   ----  ----    ---- 
-****    **** ************ ****    **** ****    **** 
+      ------    ----    ---- -----------     ------    
+     ********   ****    **** ***********    ********   
+    ----------  ----    ---- ----    ---   ----------  
+   ****    **** ****    **** *********    ****    **** 
+   ------------ ----    ---- ---------    ------------ 
+   ************ ************ ****  ****   ************ 
+   ----    ---- ------------ ----   ----  ----    ---- 
+   ****    **** ************ ****    **** ****    **** 
 </code>
 </p>
 
-# *𝔸𝕦𝕣𝕒*
+<h1 align="center">𝔸𝕦𝕣𝕒</h1>
 
-A modern, high-performance, and lightweight C++17 infrastructure library for building efficient and scalable applications. Aura provides a curated set of cross-platform components focusing on memory management, multithreading, filesystem operations, and high-performance logging.
+<p align="center">
+  <strong>A Modern, Lightweight, and High-Performance C++17 Infrastructure Library</strong>
+</p>
 
-## Features
+<hr />
 
-- **Core Infrastructure**: Threadpool, task scheduling (`xthread_flow`), memory buffer (`xbuffer`).
-- **Filesystem & Path**: Pythonic path operations (`xpath`) and generic file IO (`xfile`).
-- **Cross-Platform**: Robust platform wrappers (`xplatform`, `xdlib`) supporting macOS, Linux, Windows, and Android.
-- **Data & Text**: High-performance JSON parser (`xjson`), generic argument parsing (`xargs`), regex wrappers (`xregex`).
-- **Diagnostics**: Powerful singleton-free logging (`xlogger`), high-res timers (`xtimer`), and systrace integration (`xtracer`).
-- **Math & CV**: Advanced math utilities (`xmath`) and robust image containers (`ximage`).
+Aura is a curated collection of high-performance C++17 components designed to streamline the development of efficient, cross-platform applications. It focuses on zero-overhead abstractions, robust diagnostics, and simplified system-level operations.
 
-## Integration
+### Core Modules
 
-Aura is designed to be easily embedded into larger projects via CMake.
+| Category | Modules | Key Features |
+| :--- | :--- | :--- |
+| **Diagnostics** | `xlogger`, `xtimer2`, `xtracer2` | Hierarchical performance trees, multithreaded logging, and Systrace integration. |
+| **System** | `xplatform`, `xdlib` | Hardware topology discovery (CPU/Memory) and unified dynamic library loading. |
+| **Filesystem** | `xpath`, `xfile` | Pythonic path manipulation and high-performance file I/O wrappers. |
+| **Concurrency** | `xthreadpool`, `xthread_flow` | Low-latency task scheduling and parallel flow management. |
+| **Data & Text** | `xjson`, `xargs`, `xregex` | Rapid JSON parsing (cJSON based), CLI argument handling, and regex utilities. |
+| **Mathematics** | `xmath`, `ximage` | Optimized constants, memory-aligned math, and lightweight image containers. |
+| **Memory** | `xbuffer`, `xerror` | Resource-safe memory buffers and advanced error checking/assertion macros. |
+
+### Supported Platforms
+* **Desktop**: macOS (Apple Silicon/Intel), Linux (x86_64/AArch64), Windows (MSVC)
+* **Mobile**: Android (NDK)
+
+### Quick Start
+
+#### Integration
+Aura is designed for seamless integration via CMake:
 
 ```cmake
-# Add Aura as a subdirectory
 add_subdirectory(third_party/Aura)
-
-# Link against the static library
-target_link_libraries(my_app PRIVATE aura)
+target_link_libraries(your_app PRIVATE aura)
 ```
 
-Include the umbrella header to access all functionalities:
-```cpp
-#include "aura/aura.h"
-```
-
-## Building & Testing
-
-Requires CMake 3.14+ and a C++17 compliant compiler.
+#### Build & Test
+Ensure you have CMake 3.14+ and a C++17 compliant compiler.
 
 ```bash
 mkdir build && cd build
@@ -52,6 +57,13 @@ make -j$(sysctl -n hw.ncpu)
 ./aura_test
 ```
 
-## License
+### Design Philosophy
+* **Minimal Dependencies**: Strictly avoids heavy external frameworks.
+* **Performance First**: Prioritizes cache-friendly data structures and zero-copy semantics.
+* **Developer Experience**: Clean, consistent API design with extensive test coverage.
 
-Copyright (c) 2020-2026 WANGGREATWALL. All rights reserved.
+---
+
+<p align="center">
+  Copyright (c) 2020-2026 WANGGREATWALL. All rights reserved.
+</p>
