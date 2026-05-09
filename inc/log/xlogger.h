@@ -38,7 +38,7 @@
  */
 
 #include <atomic>
-#include <cassert>
+#include <cstdlib>
 
 #include "sys/xplatform.h"
 
@@ -89,7 +89,7 @@ private:
     Config& operator=(const Config&) = delete;
 
     std::atomic<Level> mLevel{Level::Info};
-    std::atomic<bool>  mColorEnabled{false};
+    std::atomic<bool>  mColorEnabled{true};
 #if ALGERNON_OS_ANDROID
     std::atomic<bool> mShellPrint{false};
 #endif
@@ -149,7 +149,14 @@ void logPrintFLoc(Level level, const char* file, int line, const char* fmt, ...)
 
 // ── Assertion / check macros ──
 
-#define XCHECK(expr) assert(expr)
+#define XCHECK(expr)                                                                                \
+    do {                                                                                            \
+        if (!(expr)) {                                                                              \
+            log::detail::logPrintFLoc(log::Level::Fatal, log::detail::basename(__FILE__), __LINE__, \
+                                      "check failed: '%s'\n", #expr);                               \
+            std::abort();                                                                           \
+        }                                                                                           \
+    } while (0)
 
 #define XCHECK_WITH_RET(expr, ret)                                                                  \
     do {                                                                                            \

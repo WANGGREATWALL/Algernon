@@ -34,14 +34,17 @@ inline const char* levelTag(::log::Level level) noexcept
 
 inline const char* levelColor(::log::Level level) noexcept
 {
+    // All badges use reverse video (SGR 7) so the level letter sits on a
+    // coloured block — much more visible than a single coloured glyph.
+    // Severity escalates: V (dim) < D < I < W < E < F (bold + blink).
     // clang-format off
     switch (level) {
-        case ::log::Level::Verbose: return "\033[2m";        // dim — low visual priority
-        case ::log::Level::Debug:   return "\033[36m";       // cyan
-        case ::log::Level::Info:    return "\033[32m";       // green
-        case ::log::Level::Warn:    return "\033[33m";       // yellow
-        case ::log::Level::Error:   return "\033[31m";       // red
-        case ::log::Level::Fatal:   return "\033[1;41;37m";  // bold, red bg, white text
+        case ::log::Level::Verbose: return "\033[2;7m";      // dim + reverse — lowest priority
+        case ::log::Level::Debug:   return "\033[7;36m";     // reverse cyan
+        case ::log::Level::Info:    return "\033[7;32m";     // reverse green
+        case ::log::Level::Warn:    return "\033[7;33m";     // reverse yellow
+        case ::log::Level::Error:   return "\033[7;31m";     // reverse red
+        case ::log::Level::Fatal:   return "\033[1;5;41;97m";// bold + blink + red bg + bright white fg
         default:                    return nullptr;
     }
     // clang-format on
