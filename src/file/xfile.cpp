@@ -9,7 +9,7 @@
 #include "log/xerror.h"
 #include "log/xlogger.h"
 
-namespace algernon {
+namespace au {
 namespace file {
 
 bool exists(const std::string& filename) { return std::filesystem::exists(filename); }
@@ -26,7 +26,7 @@ int createDirectory(const std::string& dir)
 
 // -- XFile --
 
-int XFile::loadToBuffer(const std::string& filename, algernon::memory::XBuffer<char>& buffer)
+int XFile::loadToBuffer(const std::string& filename, au::memory::XBuffer<char>& buffer)
 {
     XCHECK_WITH_RET(exists(filename), err::kErrorFileNotFound);
 
@@ -36,7 +36,7 @@ int XFile::loadToBuffer(const std::string& filename, algernon::memory::XBuffer<c
     auto size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
 
-    buffer = algernon::memory::XBuffer<char>(static_cast<size_t>(size) + 1);
+    buffer = au::memory::XBuffer<char>(static_cast<size_t>(size) + 1);
     ifs.read(buffer.data(), size);
     buffer.data()[size] = '\0';
 
@@ -57,7 +57,7 @@ int XFile::loadToString(const std::string& filename, std::string& buffer)
     return err::kSuccess;
 }
 
-int XFile::saveFromBuffer(const algernon::memory::XBuffer<char>& buffer, const std::string& filename)
+int XFile::saveFromBuffer(const au::memory::XBuffer<char>& buffer, const std::string& filename)
 {
     std::ofstream ofs(filename, std::ios::binary);
     XCHECK_WITH_RET(ofs.is_open(), err::kErrorOpenFailed);
@@ -163,4 +163,4 @@ std::string XFileName::getLastMatchByRegex(const std::string& filename, const st
 }
 
 }  // namespace file
-}  // namespace algernon
+}  // namespace au

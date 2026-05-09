@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     printf("   ----    ---- ------------ ----   ----  ----    ---- \n");
     printf("   ****    **** ************ ****    **** ****    **** \n");
     printf("                                                           \n");
-    printf("                        Version %s                           \n", ALGERNON_VERSION);
+    printf("                        Version %s                           \n", AURA_VERSION);
     printf("===========================================================\n\n");
 
     testing::InitGoogleTest(&argc, argv);

@@ -1,5 +1,5 @@
-#ifndef ALGERNON_JSON_XJSON_H_
-#define ALGERNON_JSON_XJSON_H_
+#ifndef AURA_JSON_XJSON_H_
+#define AURA_JSON_XJSON_H_
 
 /**
  * @file xjson.h
@@ -7,17 +7,17 @@
  *
  * @example
  *   // Read
- *   algernon::json::XJson json("config.json");
+ *   au::json::XJson json("config.json");
  *   int val = json["settings"]["width"].getInt();
  *
  *   // Write
- *   auto obj = algernon::json::XJson::object();
- *   obj.set("name", "Algernon");
+ *   auto obj = au::json::XJson::object();
+ *   obj.set("name", "Aura");
  *   obj.set("version", 2);
  *   obj.save("output.json");
  *
  *   // Parse from string
- *   auto j = algernon::json::XJson::parse(R"({"key": 42})");
+ *   auto j = au::json::XJson::parse(R"({"key": 42})");
  *   printf("%d\n", j["key"].getInt());
  */
 
@@ -27,7 +27,7 @@
 // Forward declare cJSON to avoid exposing third-party header
 struct cJSON;
 
-namespace algernon { namespace json {
+namespace au { namespace json {
 
 class XJsonValue {
 public:
@@ -127,6 +127,6 @@ private:
     bool mOwned  = false;
 };
 
-}} // namespace algernon::json
+}}  // namespace au::json
 
-#endif // ALGERNON_JSON_XJSON_H_
+#endif // AURA_JSON_XJSON_H_

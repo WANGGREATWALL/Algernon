@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "regex/xregex.h"
 
-using namespace algernon::regex;
+using namespace au::regex;
 
 TEST(XRegex, Match) {
     std::string text = "Hello, my name is Vincent. Email: vincent@example.com";

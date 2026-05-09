@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "memory/xbuffer.h"
 
-using algernon::memory::XBuffer;
+using au::memory::XBuffer;
 
 TEST(XBuffer, DefaultEmpty) {
     XBuffer<int> buf;

@@ -1,12 +1,12 @@
-#ifndef ALGERNON_FILE_XPATH_H_
-#define ALGERNON_FILE_XPATH_H_
+#ifndef AURA_FILE_XPATH_H_
+#define AURA_FILE_XPATH_H_
 
 /**
  * @file xpath.h
  * @brief Pythonic path utility wrapping std::filesystem::path.
  *
  * @example
- *   using algernon::file::XPath;
+ *   using au::file::XPath;
  *   XPath p("/home/user/data");
  *   XPath file = p / "images" / "test.png";
  *   if (file.exists()) printf("size: %llu\n", file.fileSize());
@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace algernon {
+namespace au {
 namespace file {
 
 class XPath
@@ -118,6 +118,6 @@ private:
 };
 
 }  // namespace file
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_FILE_XPATH_H_
+#endif  // AURA_FILE_XPATH_H_

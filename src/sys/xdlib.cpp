@@ -2,7 +2,7 @@
 
 #include "log/xerror.h"
 
-namespace algernon {
+namespace au {
 namespace sys {
 
 XDLib::~XDLib() { unload(); }
@@ -25,7 +25,7 @@ XDLib& XDLib::operator=(XDLib&& other) noexcept
 
 int XDLib::load(const std::string& path)
 {
-#ifdef ALGERNON_USE_DLOPEN
+#ifdef AURA_USE_DLOPEN
     mHandle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
 #else
     mHandle = LoadLibraryA(path.c_str());
@@ -38,7 +38,7 @@ int XDLib::load(const std::string& path)
 int XDLib::load(const std::vector<std::string>& paths)
 {
     for (const auto& path : paths) {
-#ifdef ALGERNON_USE_DLOPEN
+#ifdef AURA_USE_DLOPEN
         auto handle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
 #else
         auto handle = LoadLibraryA(path.c_str());
@@ -56,7 +56,7 @@ int XDLib::load(const std::vector<std::string>& paths)
 int XDLib::unload()
 {
     if (mHandle != nullptr) {
-#ifdef ALGERNON_USE_DLOPEN
+#ifdef AURA_USE_DLOPEN
         auto ret = dlclose(mHandle);
         XCHECK_WITH_RET(ret == 0, err::kErrorInvalidHandle);
 #else
@@ -73,4 +73,4 @@ int XDLib::unload()
 bool XDLib::isLoaded() const { return mHandle != nullptr; }
 
 }  // namespace sys
-}  // namespace algernon
+}  // namespace au

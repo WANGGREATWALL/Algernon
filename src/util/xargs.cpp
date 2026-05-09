@@ -1,6 +1,6 @@
 #include "util/xargs.h"
 
-namespace algernon { namespace util {
+namespace au { namespace util {
 
 bool XArgs::parse(int argc, const char* const* argv, int start) {
     std::vector<std::string> args;
@@ -66,4 +66,4 @@ bool XArgs::parse(const std::vector<std::string>& args, int start) {
     return true;
 }
 
-}} // namespace algernon::util
+}}  // namespace au::util

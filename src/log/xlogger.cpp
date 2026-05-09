@@ -5,10 +5,12 @@
 #include <cstring>
 #include <mutex>
 
-#if ALGERNON_OS_ANDROID
+#if AURA_OS_ANDROID
 #include <android/log.h>
 #endif
 
+namespace au {
+namespace log {
 namespace {
 
 std::mutex        gOutputMutex;
@@ -17,50 +19,50 @@ std::atomic<bool> gTagWarned{false};
 
 inline int clampLen(int len, int capacity) noexcept { return len < 0 ? 0 : (len >= capacity ? capacity - 1 : len); }
 
-inline const char* levelTag(::log::Level level) noexcept
+inline const char* levelTag(Level level) noexcept
 {
     // clang-format off
     switch (level) {
-        case ::log::Level::Verbose: return "V";
-        case ::log::Level::Debug:   return "D";
-        case ::log::Level::Info:    return "I";
-        case ::log::Level::Warn:    return "W";
-        case ::log::Level::Error:   return "E";
-        case ::log::Level::Fatal:   return "F";
+        case Level::Verbose: return "V";
+        case Level::Debug:   return "D";
+        case Level::Info:    return "I";
+        case Level::Warn:    return "W";
+        case Level::Error:   return "E";
+        case Level::Fatal:   return "F";
         default:                    return "?";
     }
     // clang-format on
 }
 
-inline const char* levelColor(::log::Level level) noexcept
+inline const char* levelColor(Level level) noexcept
 {
     // All badges use reverse video (SGR 7) so the level letter sits on a
     // coloured block — much more visible than a single coloured glyph.
     // Severity escalates: V (dim) < D < I < W < E < F (bold + blink).
     // clang-format off
     switch (level) {
-        case ::log::Level::Verbose: return "\033[2;7m";      // dim + reverse — lowest priority
-        case ::log::Level::Debug:   return "\033[7;36m";     // reverse cyan
-        case ::log::Level::Info:    return "\033[7;32m";     // reverse green
-        case ::log::Level::Warn:    return "\033[7;33m";     // reverse yellow
-        case ::log::Level::Error:   return "\033[7;31m";     // reverse red
-        case ::log::Level::Fatal:   return "\033[1;5;41;97m";// bold + blink + red bg + bright white fg
+        case Level::Verbose: return "\033[2;7m";      // dim + reverse — lowest priority
+        case Level::Debug:   return "\033[7;36m";     // reverse cyan
+        case Level::Info:    return "\033[7;32m";     // reverse green
+        case Level::Warn:    return "\033[7;33m";     // reverse yellow
+        case Level::Error:   return "\033[7;31m";     // reverse red
+        case Level::Fatal:   return "\033[1;5;41;97m";// bold + blink + red bg + bright white fg
         default:                    return nullptr;
     }
     // clang-format on
 }
 
-#if ALGERNON_OS_ANDROID
-inline int toAndroidPriority(::log::Level level) noexcept
+#if AURA_OS_ANDROID
+inline int toAndroidPriority(Level level) noexcept
 {
     // clang-format off
     switch (level) {
-        case ::log::Level::Verbose: return ANDROID_LOG_VERBOSE;
-        case ::log::Level::Debug:   return ANDROID_LOG_DEBUG;
-        case ::log::Level::Info:    return ANDROID_LOG_INFO;
-        case ::log::Level::Warn:    return ANDROID_LOG_WARN;
-        case ::log::Level::Error:   return ANDROID_LOG_ERROR;
-        case ::log::Level::Fatal:   return ANDROID_LOG_FATAL;
+        case Level::Verbose: return ANDROID_LOG_VERBOSE;
+        case Level::Debug:   return ANDROID_LOG_DEBUG;
+        case Level::Info:    return ANDROID_LOG_INFO;
+        case Level::Warn:    return ANDROID_LOG_WARN;
+        case Level::Error:   return ANDROID_LOG_ERROR;
+        case Level::Fatal:   return ANDROID_LOG_FATAL;
         default:                    return ANDROID_LOG_DEFAULT;
     }
     // clang-format on
@@ -74,7 +76,7 @@ struct FmtResult
     int  outLen;
 };
 
-inline void formatOutBuf(FmtResult& r, const char* tag, ::log::Level level, bool color, const char* file, int line,
+inline void formatOutBuf(FmtResult& r, const char* tag, Level level, bool color, const char* file, int line,
                          const char* fmt, va_list args) noexcept
 {
     const char* lc = color ? levelColor(level) : nullptr;
@@ -94,37 +96,37 @@ inline void formatOutBuf(FmtResult& r, const char* tag, ::log::Level level, bool
     r.outLen    = prefixLen + bodyLen;
 }
 
-inline void logPrint(::log::Level level, const char* file, int line, const char* fmt, va_list args) noexcept
+inline void logPrint(Level level, const char* file, int line, const char* fmt, va_list args) noexcept
 {
-    if (::log::Config::get().tryConsumeTagWarning()) {
+    if (Config::get().tryConsumeTagWarning()) {
         std::fprintf(stderr,
                      "[unknown][W] log tag not set — "
-                     "call log::Config::get().setTag(\"YourTag\") at startup\n");
+                     "call Config::get().setTag(\"YourTag\") at startup\n");
     }
 
-    const bool needFlush = (level >= ::log::Level::Warn);
+    const bool needFlush = (level >= Level::Warn);
 
-#if ALGERNON_OS_ANDROID
+#if AURA_OS_ANDROID
     const int  prio         = toAndroidPriority(level);
-    const bool shellEnabled = ::log::Config::get().isShellPrintEnabled();
+    const bool shellEnabled = Config::get().isShellPrintEnabled();
 
     if (!shellEnabled) {
         if (file == nullptr) {
-            __android_log_vprint(prio, ::log::Config::get().getTag(), fmt, args);
+            __android_log_vprint(prio, Config::get().getTag(), fmt, args);
         } else {
             char bodyBuf[820];
             std::vsnprintf(bodyBuf, sizeof(bodyBuf), fmt, args);
-            __android_log_print(prio, ::log::Config::get().getTag(), "(%s:%d) %s", file, line, bodyBuf);
+            __android_log_print(prio, Config::get().getTag(), "(%s:%d) %s", file, line, bodyBuf);
         }
         return;
     }
 #endif
 
     FmtResult r;
-    formatOutBuf(r, ::log::Config::get().getTag(), level, ::log::Config::get().isColorEnabled(), file, line, fmt, args);
+    formatOutBuf(r, Config::get().getTag(), level, Config::get().isColorEnabled(), file, line, fmt, args);
 
-#if ALGERNON_OS_ANDROID
-    __android_log_write(prio, ::log::Config::get().getTag(), r.buf + r.hdrLen);
+#if AURA_OS_ANDROID
+    __android_log_write(prio, Config::get().getTag(), r.buf + r.hdrLen);
 #endif
 
     std::lock_guard<std::mutex> lk(gOutputMutex);
@@ -133,9 +135,9 @@ inline void logPrint(::log::Level level, const char* file, int line, const char*
         std::fflush(stdout);
 }
 
-}  // namespace
+}  // anonymous namespace
 
-void ::log::Config::setTag(const char* tag) noexcept
+void Config::setTag(const char* tag) noexcept
 {
     std::lock_guard<std::mutex> lock(gOutputMutex);
     std::strncpy(gTag, tag ? tag : "unknown", sizeof(gTag) - 1);
@@ -143,9 +145,9 @@ void ::log::Config::setTag(const char* tag) noexcept
     gTagWarned.store(true, std::memory_order_relaxed);
 }
 
-const char* ::log::Config::getTag() const noexcept { return gTag; }
+const char* Config::getTag() const noexcept { return gTag; }
 
-bool ::log::Config::tryConsumeTagWarning() noexcept
+bool Config::tryConsumeTagWarning() noexcept
 {
     if (gTagWarned.load(std::memory_order_relaxed))
         return false;
@@ -153,7 +155,7 @@ bool ::log::Config::tryConsumeTagWarning() noexcept
     return gTagWarned.compare_exchange_strong(expected, true, std::memory_order_relaxed);
 }
 
-void ::log::detail::logPrintF(::log::Level level, const char* fmt, ...) noexcept
+void detail::logPrintF(Level level, const char* fmt, ...) noexcept
 {
     va_list args;
     va_start(args, fmt);
@@ -161,10 +163,13 @@ void ::log::detail::logPrintF(::log::Level level, const char* fmt, ...) noexcept
     va_end(args);
 }
 
-void ::log::detail::logPrintFLoc(::log::Level level, const char* file, int line, const char* fmt, ...) noexcept
+void detail::logPrintFLoc(Level level, const char* file, int line, const char* fmt, ...) noexcept
 {
     va_list args;
     va_start(args, fmt);
     logPrint(level, file, line, fmt, args);
     va_end(args);
 }
+
+}  // namespace log
+}  // namespace au

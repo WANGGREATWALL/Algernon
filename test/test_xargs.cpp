@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "util/xargs.h"
 
-using algernon::util::XArgs;
+using au::util::XArgs;
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 

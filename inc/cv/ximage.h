@@ -1,13 +1,13 @@
-#ifndef ALGERNON_CV_XIMAGE_H_
-#define ALGERNON_CV_XIMAGE_H_
+#ifndef AURA_CV_XIMAGE_H_
+#define AURA_CV_XIMAGE_H_
 
 /**
  * @file ximage.h
  * @brief Image container with multi-plane support and format utilities.
  *
  * @example
- *   algernon::cv::XImage img(mempool, 1920, 1080, algernon::cv::kXFormatNV21);
- *   auto* ptr = img.dataptr<uint8_t>(algernon::cv::Plane0, row, col);
+ *   au::cv::XImage img(mempool, 1920, 1080, au::cv::kXFormatNV21);
+ *   auto* ptr = img.dataptr<uint8_t>(au::cv::Plane0, row, col);
  */
 
 #include <string>
@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <cstdint>
 
-namespace algernon { namespace cv {
+namespace au { namespace cv {
 
 enum XImageFormat : int {
     kXFormatInvalid         = 0,
@@ -119,6 +119,6 @@ private:
     bool   mIsRaw       = false;
 };
 
-}} // namespace algernon::cv
+}}  // namespace au::cv
 
-#endif // ALGERNON_CV_XIMAGE_H_
+#endif // AURA_CV_XIMAGE_H_

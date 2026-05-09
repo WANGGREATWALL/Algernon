@@ -1,5 +1,5 @@
-#ifndef ALGERNON_CV_XIMAGE_IO_H_
-#define ALGERNON_CV_XIMAGE_IO_H_
+#ifndef AURA_CV_XIMAGE_IO_H_
+#define AURA_CV_XIMAGE_IO_H_
 
 /**
  * @file ximage_io.h
@@ -8,13 +8,13 @@
  * Supported formats: JPEG, PNG, NV21/NV12, gray, raw.
  *
  * @example
- *   auto img = algernon::cv::XImageIO::load("/data/photo.jpg");
- *   algernon::cv::XImageIO::dump(img, "/data/output");
+ *   auto img = au::cv::XImageIO::load("/data/photo.jpg");
+ *   au::cv::XImageIO::dump(img, "/data/output");
  */
 
 #include "cv/ximage.h"
 
-namespace algernon { namespace cv {
+namespace au { namespace cv {
 
 class XImageIO {
 public:
@@ -36,6 +36,6 @@ public:
     static int dump(const XImage& image, const std::string& nameWithoutFormat);
 };
 
-}} // namespace algernon::cv
+}}  // namespace au::cv
 
-#endif // ALGERNON_CV_XIMAGE_IO_H_
+#endif // AURA_CV_XIMAGE_IO_H_

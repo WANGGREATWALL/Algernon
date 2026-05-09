@@ -1,12 +1,12 @@
-#ifndef ALGERNON_PERF_XTIMER2_H_
-#define ALGERNON_PERF_XTIMER2_H_
+#ifndef AURA_PERF_XTIMER2_H_
+#define AURA_PERF_XTIMER2_H_
 
 #include <chrono>
 #include <string>
 
 #include "sys/xplatform.h"
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 /**
@@ -128,6 +128,6 @@ private:
 };
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_PERF_XTIMER2_H_
+#endif  // AURA_PERF_XTIMER2_H_

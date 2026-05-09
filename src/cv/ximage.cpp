@@ -7,7 +7,7 @@
 #include "log/xlogger.h"
 #include "math/xmath.h"
 
-namespace algernon {
+namespace au {
 namespace cv {
 
 static std::map<int, std::string> MapImageFormat{{kXFormatInvalid, "kXFormatInvalid"},
@@ -38,21 +38,21 @@ Image imageAlloc(void* mempool, uint32_t width, uint32_t height, int format)
     memset(image.stride, 0, sizeof(image.stride));
 
     if (format == kXFormatGrayU8) {
-        image.stride[0] = algernon::math::ceilTo8(width);
+        image.stride[0] = au::math::ceilTo8(width);
         image.data[0]   = (uint8_t*)malloc(image.height * image.stride[0]);
     } else if (format == kXFormatGrayU16 || format == kXFormatUV) {
-        image.stride[0] = algernon::math::ceilTo8(width * 2);
+        image.stride[0] = au::math::ceilTo8(width * 2);
         image.data[0]   = (uint8_t*)malloc(image.height * image.stride[0]);
     } else if (format == kXFormatNV12 || format == kXFormatNV21) {
-        image.stride[0] = algernon::math::ceilTo8(width);
+        image.stride[0] = au::math::ceilTo8(width);
         image.stride[1] = image.stride[0];
         image.data[0]   = (uint8_t*)malloc(image.height * image.stride[0]);
         image.data[1]   = (uint8_t*)malloc((image.height / 2) * image.stride[1]);
     } else if (format == kXFormatRGBU8 || format == kXFormatBGRU8) {
-        image.stride[0] = algernon::math::ceilTo8(width * 3);
+        image.stride[0] = au::math::ceilTo8(width * 3);
         image.data[0]   = (uint8_t*)malloc(image.height * image.stride[0]);
     } else if (format == kXFormatGrayU32 || format == kXFormatRGBAU8 || format == kXFormatBGRAU8) {
-        image.stride[0] = algernon::math::ceilTo8(width * 4);
+        image.stride[0] = au::math::ceilTo8(width * 4);
         image.data[0]   = (uint8_t*)malloc(image.height * image.stride[0]);
     }
 
@@ -316,4 +316,4 @@ bool XImage::isSameSizeAndFormatWith(const Image& image) const { return cv::isSa
 
 
 }  // namespace cv
-}  // namespace algernon
+}  // namespace au

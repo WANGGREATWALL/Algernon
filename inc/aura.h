@@ -1,9 +1,9 @@
-#ifndef ALGERNON_H_
-#define ALGERNON_H_
+#ifndef AURA_H_
+#define AURA_H_
 
 /**
- * @file algernon.h
- * @brief Umbrella header: include this single file to import all Algernon modules.
+ * @file aura.h
+ * @brief Umbrella header: include this single file to import all Aura modules.
  */
 
 #include "cv/ximage.h"
@@ -25,4 +25,4 @@
 #include "util/xargs.h"
 #include "version.h"
 
-#endif  // ALGERNON_H_
+#endif  // AURA_H_

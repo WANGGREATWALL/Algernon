@@ -8,6 +8,9 @@
 #include "gtest/gtest.h"
 #include "log/xlogger.h"
 
+using namespace au;
+using namespace au::log;
+
 // ---------------------------------------------------------------------------
 // Fixture
 // ---------------------------------------------------------------------------
@@ -17,12 +20,12 @@ class XLoggerTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        log::Config::get().setTag("XLoggerTest");
-        log::Config::get().setLevel(log::Level::Verbose);
-        log::Config::get().setColorEnabled(true);
-#if ALGERNON_OS_ANDROID
+        Config::get().setTag("XLoggerTest");
+        Config::get().setLevel(log::Level::Verbose);
+        Config::get().setColorEnabled(true);
+#if AURA_OS_ANDROID
         // Default target is logcat; enable shell so CaptureStdout can intercept.
-        log::Config::get().setShellPrintEnabled(true);
+        Config::get().setShellPrintEnabled(true);
 #endif
     }
 };
@@ -70,20 +73,20 @@ static int fnCheckMsg(int w)
 
 TEST_F(XLoggerTest, Config)
 {
-    log::Config::get().setTag("XLoggerTest-Config");
-    EXPECT_STREQ(log::Config::get().getTag(), "XLoggerTest-Config");
+    Config::get().setTag("XLoggerTest-Config");
+    EXPECT_STREQ(Config::get().getTag(), "XLoggerTest-Config");
 
     // null tag falls back to "unknown"
-    log::Config::get().setTag(nullptr);
-    EXPECT_STREQ(log::Config::get().getTag(), "unknown");
+    Config::get().setTag(nullptr);
+    EXPECT_STREQ(Config::get().getTag(), "unknown");
 
-    log::Config::get().setLevel(log::Level::Fatal);
-    EXPECT_EQ(log::Config::get().getLevel(), log::Level::Fatal);
+    Config::get().setLevel(log::Level::Fatal);
+    EXPECT_EQ(Config::get().getLevel(), log::Level::Fatal);
 
-    log::Config::get().setColorEnabled(true);
-    EXPECT_TRUE(log::Config::get().isColorEnabled());
-    log::Config::get().setColorEnabled(false);
-    EXPECT_FALSE(log::Config::get().isColorEnabled());
+    Config::get().setColorEnabled(true);
+    EXPECT_TRUE(Config::get().isColorEnabled());
+    Config::get().setColorEnabled(false);
+    EXPECT_FALSE(Config::get().isColorEnabled());
 }
 
 // ===========================================================================
@@ -92,7 +95,7 @@ TEST_F(XLoggerTest, Config)
 
 TEST_F(XLoggerTest, LevelFilter)
 {
-    log::Config::get().setLevel(log::Level::Warn);
+    Config::get().setLevel(log::Level::Warn);
 
     const std::string suppressed = captureStdout([] {
         XLOG_V("v\n");
@@ -110,7 +113,7 @@ TEST_F(XLoggerTest, LevelFilter)
     EXPECT_NE(passed.find("error"), std::string::npos);
     EXPECT_NE(passed.find("fatal"), std::string::npos);
 
-    log::Config::get().setLevel(log::Level::Silent);
+    Config::get().setLevel(log::Level::Silent);
     const std::string silent = captureStdout([] {
         XLOG_W("w\n");
         XLOG_E("e\n");
@@ -125,9 +128,9 @@ TEST_F(XLoggerTest, LevelFilter)
 
 TEST_F(XLoggerTest, Format)
 {
-    log::Config::get().setTag("Fmt");
+    Config::get().setTag("Fmt");
 
-    log::Config::get().setColorEnabled(false);
+    Config::get().setColorEnabled(false);
 
     // V/D/I: "[tag][L] message", no file:line
     const std::string outI = captureStdout([] { XLOG_I("hello %d\n", 42); });
@@ -144,7 +147,7 @@ TEST_F(XLoggerTest, Format)
     EXPECT_NE(outW.find(':', pos), std::string::npos) << "location must contain ':'";
 
     // Tag change must be reflected immediately.
-    log::Config::get().setTag("New");
+    Config::get().setTag("New");
     const std::string outNew = captureStdout([] { XLOG_I("x\n"); });
     EXPECT_NE(outNew.find("[New]"), std::string::npos);
     EXPECT_EQ(outNew.find("[Fmt]"), std::string::npos);
@@ -158,8 +161,8 @@ TEST_F(XLoggerTest, Format)
 
 TEST_F(XLoggerTest, ColorOutput)
 {
-    log::Config::get().setTag("XLoggerTest-ColorOutput");
-    log::Config::get().setColorEnabled(true);
+    Config::get().setTag("XLoggerTest-ColorOutput");
+    Config::get().setColorEnabled(true);
 
     // V/D/I have no badge color; use W (yellow) to verify ANSI is present.
     const std::string outColor = captureStdout([] { XLOG_W("colored\n"); });
@@ -167,7 +170,7 @@ TEST_F(XLoggerTest, ColorOutput)
     EXPECT_NE(outColor.find("\033[0m"), std::string::npos) << "Expected ANSI reset after [W] badge";
     EXPECT_NE(outColor.find("colored"), std::string::npos);
 
-    log::Config::get().setColorEnabled(false);
+    Config::get().setColorEnabled(false);
     const std::string outPlain = captureStdout([] { XLOG_W("plain\n"); });
     EXPECT_EQ(outPlain.find("\033["), std::string::npos) << "No ANSI escape when color=false";
     EXPECT_NE(outPlain.find("plain"), std::string::npos);
@@ -216,7 +219,7 @@ TEST_F(XLoggerTest, CheckMacros)
 
 TEST_F(XLoggerTest, NewlineOnStdout)
 {
-    log::Config::get().setTag("XLoggerTest-NewlineOnStdout");
+    Config::get().setTag("XLoggerTest-NewlineOnStdout");
 
     // Each message has one '\n'; stdout must show exactly that — no doubling.
     const std::string outVDI = captureStdout([] {
@@ -239,9 +242,9 @@ TEST_F(XLoggerTest, NewlineOnStdout)
     const std::string outNone = captureStdout([] { XLOG_I("no-newline"); });
     EXPECT_EQ(countOccurrences(outNone, "\n"), 0) << "trailing newline must not be added";
 
-#if ALGERNON_OS_ANDROID
+#if AURA_OS_ANDROID
     // shellEnabled=false: output goes to logcat only — stdout must be empty.
-    log::Config::get().setShellPrintEnabled(false);
+    Config::get().setShellPrintEnabled(false);
     const std::string outLogcatOnly = captureStdout([] {
         XLOG_V("v\n");
         XLOG_D("d\n");
@@ -251,7 +254,7 @@ TEST_F(XLoggerTest, NewlineOnStdout)
         XLOG_F("f\n");
     });
     EXPECT_TRUE(outLogcatOnly.empty()) << "shellEnabled=false: stdout must be empty";
-    log::Config::get().setShellPrintEnabled(true);
+    Config::get().setShellPrintEnabled(true);
 #endif
 }
 
@@ -266,11 +269,11 @@ TEST_F(XLoggerTest, NewlineOnStdout)
 // Verify with:  adb logcat -s XLOG_NL_CHK
 //   All entries should appear as single lines with no spurious blank lines.
 
-#if ALGERNON_OS_ANDROID
+#if AURA_OS_ANDROID
 TEST_F(XLoggerTest, AndroidLogcatNewlineProbe)
 {
-    log::Config::get().setTag("XLOG_NL_CHK");
-    log::Config::get().setShellPrintEnabled(false);
+    Config::get().setTag("XLOG_NL_CHK");
+    Config::get().setShellPrintEnabled(false);
 
     XLOG_V("V with trailing newline — logd strips it, no blank line\n");
     XLOG_D("D with trailing newline — logd strips it, no blank line\n");
@@ -279,7 +282,7 @@ TEST_F(XLoggerTest, AndroidLogcatNewlineProbe)
     XLOG_E("E with trailing newline — stripped by both code and logd\n");
     XLOG_F("F with trailing newline — stripped by both code and logd\n");
 
-    log::Config::get().setShellPrintEnabled(true);
+    Config::get().setShellPrintEnabled(true);
     SUCCEED() << "Inspect logcat manually: adb logcat -s XLOG_NL_CHK";
 }
 #endif
@@ -295,7 +298,7 @@ TEST_F(XLoggerTest, ThreadSafety)
 
     // Disable color so every line starts with '[' — ANSI escapes would
     // prepend '\033[' and make the prefix check meaningless.
-    log::Config::get().setColorEnabled(false);
+    Config::get().setColorEnabled(false);
 
     testing::internal::CaptureStdout();
     {

@@ -1,16 +1,16 @@
-#ifndef ALGERNON_SYS_XPLATFORM_H_
-#define ALGERNON_SYS_XPLATFORM_H_
+#ifndef AURA_SYS_XPLATFORM_H_
+#define AURA_SYS_XPLATFORM_H_
 
 /**
  * @file xplatform.h
  * @brief Cross-platform system information: OS, CPU, memory, GPU, SoC, env vars.
  *
  * @example
- *   auto cpu = algernon::sys::getCpuInfo();
+ *   auto cpu = au::sys::getCpuInfo();
  *   printf("cores: %d, model: %s\n", cpu.coreCount, cpu.modelName.c_str());
  *
- *   algernon::sys::setEnv("MY_VAR", "hello");
- *   auto val = algernon::sys::getEnv("MY_VAR"); // "hello"
+ *   au::sys::setEnv("MY_VAR", "hello");
+ *   auto val = au::sys::getEnv("MY_VAR"); // "hello"
  */
 
 #include <cstdint>
@@ -22,36 +22,36 @@
 // ============================================================================
 
 #if defined(_WIN32) || defined(_WIN64)
-#define ALGERNON_OS_WINDOWS 1
+#define AURA_OS_WINDOWS 1
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
-#define ALGERNON_OS_IOS 1
+#define AURA_OS_IOS 1
 #else
-#define ALGERNON_OS_MACOS 1
+#define AURA_OS_MACOS 1
 #endif
-#define ALGERNON_OS_APPLE 1
+#define AURA_OS_APPLE 1
 #elif defined(__ANDROID__)
-#define ALGERNON_OS_ANDROID 1
-#define ALGERNON_OS_LINUX 1
+#define AURA_OS_ANDROID 1
+#define AURA_OS_LINUX 1
 #elif defined(__linux__)
-#define ALGERNON_OS_LINUX 1
+#define AURA_OS_LINUX 1
 #else
-#define ALGERNON_OS_UNKNOWN 1
+#define AURA_OS_UNKNOWN 1
 #endif
 
 // Architecture
 #if defined(__x86_64__) || defined(_M_X64)
-#define ALGERNON_ARCH_X86_64 1
+#define AURA_ARCH_X86_64 1
 #elif defined(__i386__) || defined(_M_IX86)
-#define ALGERNON_ARCH_X86 1
+#define AURA_ARCH_X86 1
 #elif defined(__aarch64__) || defined(_M_ARM64)
-#define ALGERNON_ARCH_ARM64 1
+#define AURA_ARCH_ARM64 1
 #elif defined(__arm__) || defined(_M_ARM)
-#define ALGERNON_ARCH_ARM 1
+#define AURA_ARCH_ARM 1
 #endif
 
-namespace algernon {
+namespace au {
 namespace sys {
 
 // ============================================================================
@@ -86,27 +86,27 @@ enum class SocVendor
 };
 
 // Compile-time platform
-#if defined(ALGERNON_OS_WINDOWS)
+#if defined(AURA_OS_WINDOWS)
 inline constexpr Platform kBuildPlatform = Platform::Windows;
-#elif defined(ALGERNON_OS_MACOS)
+#elif defined(AURA_OS_MACOS)
 inline constexpr Platform kBuildPlatform = Platform::macOS;
-#elif defined(ALGERNON_OS_IOS)
+#elif defined(AURA_OS_IOS)
 inline constexpr Platform kBuildPlatform = Platform::iOS;
-#elif defined(ALGERNON_OS_ANDROID)
+#elif defined(AURA_OS_ANDROID)
 inline constexpr Platform kBuildPlatform = Platform::Android;
-#elif defined(ALGERNON_OS_LINUX)
+#elif defined(AURA_OS_LINUX)
 inline constexpr Platform kBuildPlatform = Platform::Linux;
 #else
 inline constexpr Platform kBuildPlatform = Platform::Unknown;
 #endif
 
-#if defined(ALGERNON_ARCH_X86_64)
+#if defined(AURA_ARCH_X86_64)
 inline constexpr Arch kBuildArch = Arch::x86_64;
-#elif defined(ALGERNON_ARCH_X86)
+#elif defined(AURA_ARCH_X86)
 inline constexpr Arch kBuildArch = Arch::x86;
-#elif defined(ALGERNON_ARCH_ARM64)
+#elif defined(AURA_ARCH_ARM64)
 inline constexpr Arch kBuildArch = Arch::ARM64;
-#elif defined(ALGERNON_ARCH_ARM)
+#elif defined(AURA_ARCH_ARM)
 inline constexpr Arch kBuildArch = Arch::ARM;
 #else
 inline constexpr Arch kBuildArch = Arch::Unknown;
@@ -203,6 +203,6 @@ std::string getHostName();
 int getHardwareConcurrency();
 
 }  // namespace sys
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_SYS_XPLATFORM_H_
+#endif  // AURA_SYS_XPLATFORM_H_

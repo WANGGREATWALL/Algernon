@@ -2,12 +2,12 @@
 
 #include "log/xlogger.h"
 
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
 #include <fcntl.h>
 #include <unistd.h>
 #endif
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 namespace {
@@ -20,7 +20,7 @@ enum TraceMode
 
 int openTraceFile()
 {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     int fd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
     if (fd == -1)
         fd = open("/sys/kernel/tracing/trace_marker", O_WRONLY);
@@ -32,7 +32,7 @@ int openTraceFile()
 
 void closeTraceFile(int fd)
 {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     if (fd >= 0)
         close(fd);
 #else
@@ -43,7 +43,7 @@ void closeTraceFile(int fd)
 void writeTraceMessage([[maybe_unused]] int fd, [[maybe_unused]] const std::string& name,
                        [[maybe_unused]] TraceMode mode)
 {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     if (fd < 0)
         return;
     std::string msg = (mode == kBegin ? "B|" : "E|") + std::to_string(getpid()) + "|" + name;
@@ -97,4 +97,4 @@ void XTracerScoped::sub()
 }
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au

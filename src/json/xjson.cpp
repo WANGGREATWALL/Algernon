@@ -7,7 +7,7 @@
 #include "log/xerror.h"
 #include "log/xlogger.h"
 
-namespace algernon {
+namespace au {
 namespace json {
 
 // ============================================================================
@@ -147,7 +147,7 @@ XJson XJson::array()
 int XJson::parseFile(const std::string& filename)
 {
     std::string content;
-    int         ret = algernon::file::XFile::loadToString(filename, content);
+    int         ret = au::file::XFile::loadToString(filename, content);
     XCHECK_WITH_RET(ret == err::kSuccess, ret);
     return parseString(content);
 }
@@ -282,4 +282,4 @@ int XJson::save(const std::string& filename, int indent) const
 }
 
 }  // namespace json
-}  // namespace algernon
+}  // namespace au

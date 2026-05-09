@@ -1,9 +1,9 @@
-#ifndef ALGERNON_THREADPOOL_XTHREADPOOL_IMPL_H_
-#define ALGERNON_THREADPOOL_XTHREADPOOL_IMPL_H_
+#ifndef AURA_THREADPOOL_XTHREADPOOL_IMPL_H_
+#define AURA_THREADPOOL_XTHREADPOOL_IMPL_H_
 
 #include "xthreadpool.h"
 
-namespace algernon { namespace framework {
+namespace au { namespace framework {
 
 inline XThreadpool::XThreadpool(size_t threads) {
     for (size_t i = 0; i < threads; ++i) {
@@ -53,6 +53,6 @@ inline XThreadpool::~XThreadpool() {
     }
 }
 
-}} // namespace algernon::framework
+}}  // namespace au::framework
 
-#endif // ALGERNON_THREADPOOL_XTHREADPOOL_IMPL_H_
+#endif // AURA_THREADPOOL_XTHREADPOOL_IMPL_H_

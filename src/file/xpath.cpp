@@ -1,7 +1,7 @@
 #include "file/xpath.h"
 #include <regex>
 
-namespace algernon { namespace file {
+namespace au { namespace file {
 
 std::vector<XPath> XPath::listFiles() const {
     std::vector<XPath> result;
@@ -63,4 +63,4 @@ bool XPath::copy(const XPath& dest) const {
     return !ec;
 }
 
-}} // namespace algernon::file
+}}  // namespace au::file

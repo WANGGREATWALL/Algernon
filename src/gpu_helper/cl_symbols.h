@@ -7,7 +7,7 @@
 #include "log/xlogger.h"
 #include "sys/xdlib.h"
 
-using algernon::sys::XDLib;
+using au::sys::XDLib;
 
 #ifdef __APPLE__
 #undef CL_TARGET_OPENCL_VERSION
@@ -41,7 +41,7 @@ namespace gpu {
 class CLSymbols
 {
 public:
-    static algernon::sys::XDLib& lib()
+    static au::sys::XDLib& lib()
     {
         static CLSymbols instance;
         return instance.mLib;
@@ -56,7 +56,7 @@ private:
         XCHECK(ret == err::kSuccess);
     }
 
-    algernon::sys::XDLib mLib;
+    au::sys::XDLib mLib;
 
     std::vector<std::string> mLibPaths = {"/vendor/lib64/libOpenCL.so",
 

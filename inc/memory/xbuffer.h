@@ -1,12 +1,12 @@
-#ifndef ALGERNON_MEMORY_XBUFFER_H_
-#define ALGERNON_MEMORY_XBUFFER_H_
+#ifndef AURA_MEMORY_XBUFFER_H_
+#define AURA_MEMORY_XBUFFER_H_
 
 /**
  * @file xbuffer.h
  * @brief Managed buffer with shared ownership, move semantics, and iterators.
  *
  * @example
- *   algernon::memory::XBuffer<float> buf(1024);
+ *   au::memory::XBuffer<float> buf(1024);
  *   buf[0] = 3.14f;
  *   buf.fill(0.0f);
  *
@@ -25,7 +25,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace algernon { namespace memory {
+namespace au { namespace memory {
 
 template <typename T>
 class XBuffer {
@@ -114,6 +114,6 @@ private:
     size_t mSize = 0;
 };
 
-}} // namespace algernon::memory
+}}  // namespace au::memory
 
-#endif // ALGERNON_MEMORY_XBUFFER_H_
+#endif // AURA_MEMORY_XBUFFER_H_

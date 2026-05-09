@@ -1,5 +1,5 @@
-#ifndef ALGERNON_SYS_XDLIB_H_
-#define ALGERNON_SYS_XDLIB_H_
+#ifndef AURA_SYS_XDLIB_H_
+#define AURA_SYS_XDLIB_H_
 
 /**
  * @file xdlib.h
@@ -8,7 +8,7 @@
  * Supports Windows (LoadLibrary), Linux/macOS/Android (dlopen).
  *
  * @example
- *   algernon::sys::XDLib lib;
+ *   au::sys::XDLib lib;
  *   lib.load("/usr/lib/libfoo.so");
  *
  *   // Resolve a symbol by type:
@@ -28,15 +28,15 @@
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <dlfcn.h>
-#define ALGERNON_USE_DLOPEN 1
+#define AURA_USE_DLOPEN 1
 #else
 #include <Windows.h>
 #endif
 
-namespace algernon { namespace sys {
+namespace au { namespace sys {
 
 class XDLib {
-#ifdef ALGERNON_USE_DLOPEN
+#ifdef AURA_USE_DLOPEN
     using NativeHandle = void*;
 #else
     using NativeHandle = HMODULE;
@@ -93,7 +93,7 @@ public:
         std::lock_guard<std::mutex> lock(mMutex);
         auto [it, inserted] = mSymbolCache.try_emplace(name, nullptr);
         if (inserted) {
-#ifdef ALGERNON_USE_DLOPEN
+#ifdef AURA_USE_DLOPEN
             it->second = dlsym(mHandle, name);
 #else
             it->second = reinterpret_cast<void*>(GetProcAddress(mHandle, name));
@@ -113,7 +113,7 @@ private:
     std::mutex mMutex;
 };
 
-}} // namespace algernon::sys
+}}  // namespace au::sys
 
 /**
  * @brief Convenience macro: resolve a symbol with automatic name stringification.
@@ -121,4 +121,4 @@ private:
  */
 #define XDLIB_GET(lib, func) (lib).get<decltype(func)>(#func)
 
-#endif // ALGERNON_SYS_XDLIB_H_
+#endif // AURA_SYS_XDLIB_H_

@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "perf/xtimer.h"
 
-using namespace algernon::perf;
+using namespace au::perf;
 
 TEST(XTimer, Elapsed) {
     XTimer t;

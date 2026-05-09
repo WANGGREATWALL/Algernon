@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "math/xmath.h"
 
-using namespace algernon::math;
+using namespace au::math;
 
 TEST(XMath, Constants) {
     EXPECT_NEAR(kPi, 3.14159265358979323846, 1e-15);

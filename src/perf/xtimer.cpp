@@ -8,7 +8,7 @@
 
 #include "log/xlogger.h"
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 namespace {
@@ -173,4 +173,4 @@ void XTimerScoped::sub() { TimerTree::get().joinLevelTo(mLevelBegin + 1); }
 size_t XTimerScoped::getLevel() const { return mLevelBegin + 1; }
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au

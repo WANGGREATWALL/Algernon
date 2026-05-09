@@ -1,5 +1,5 @@
-#ifndef ALGERNON_MATH_XMATH_H_
-#define ALGERNON_MATH_XMATH_H_
+#ifndef AURA_MATH_XMATH_H_
+#define AURA_MATH_XMATH_H_
 
 /**
  * @file xmath.h
@@ -8,7 +8,7 @@
  * Include this single header for all common math operations.
  *
  * @example
- *   using namespace algernon::math;
+ *   using namespace au::math;
  *   auto v = clamp(val, 0.0f, 1.0f);
  *   auto a = ceilTo8(width);
  *   bool ok = isPowerOf2(256);
@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace algernon {
+namespace au {
 namespace math {
 
 // ============================================================================
@@ -156,6 +156,6 @@ template <typename T> constexpr T rad2deg(T rad) { return rad * static_cast<T>(1
 // clang-format on
 
 }  // namespace math
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_MATH_XMATH_H_
+#endif  // AURA_MATH_XMATH_H_

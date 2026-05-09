@@ -1,9 +1,9 @@
-#ifndef ALGERNON_PERF_XTRACER2_H_
-#define ALGERNON_PERF_XTRACER2_H_
+#ifndef AURA_PERF_XTRACER2_H_
+#define AURA_PERF_XTRACER2_H_
 
 #include "perf/xtimer2.h"
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 /**
@@ -67,6 +67,6 @@ private:
 };
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_PERF_XTRACER2_H_
+#endif  // AURA_PERF_XTRACER2_H_

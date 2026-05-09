@@ -1,5 +1,5 @@
-#ifndef ALGERNON_PERF_XTRACER_H_
-#define ALGERNON_PERF_XTRACER_H_
+#ifndef AURA_PERF_XTRACER_H_
+#define AURA_PERF_XTRACER_H_
 
 /**
  * @file xtracer.h
@@ -10,7 +10,7 @@
  *
  * @example
  *   {
- *       algernon::perf::XTracerScoped t("processFrame");
+ *       au::perf::XTracerScoped t("processFrame");
  *       t.sub("preprocess");
  *       // ... work ...
  *       t.sub("inference");
@@ -23,7 +23,7 @@
 
 #include "perf/xtimer.h"
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 class XTracerScoped
@@ -46,6 +46,6 @@ private:
 };
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_PERF_XTRACER_H_
+#endif  // AURA_PERF_XTRACER_H_

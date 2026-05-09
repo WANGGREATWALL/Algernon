@@ -1,5 +1,5 @@
-#ifndef ALGERNON_FILE_XFILE_H_
-#define ALGERNON_FILE_XFILE_H_
+#ifndef AURA_FILE_XFILE_H_
+#define AURA_FILE_XFILE_H_
 
 /**
  * @file xfile.h
@@ -7,8 +7,8 @@
  *
  * @example
  *   std::string content;
- *   algernon::file::XFile::loadToString("config.json", content);
- *   algernon::file::XFile::saveFromString(content, "config_bak.json");
+ *   au::file::XFile::loadToString("config.json", content);
+ *   au::file::XFile::saveFromString(content, "config_bak.json");
  */
 
 #include <string>
@@ -16,7 +16,7 @@
 
 #include "memory/xbuffer.h"
 
-namespace algernon {
+namespace au {
 namespace file {
 
 bool exists(const std::string& filename);
@@ -26,9 +26,9 @@ int  createDirectory(const std::string& dir);
 class XFile
 {
 public:
-    static int loadToBuffer(const std::string& filename, algernon::memory::XBuffer<char>& buffer);
+    static int loadToBuffer(const std::string& filename, au::memory::XBuffer<char>& buffer);
     static int loadToString(const std::string& filename, std::string& buffer);
-    static int saveFromBuffer(const algernon::memory::XBuffer<char>& buffer, const std::string& filename);
+    static int saveFromBuffer(const au::memory::XBuffer<char>& buffer, const std::string& filename);
     static int saveFromString(const std::string& content, const std::string& filename);
 };
 
@@ -62,6 +62,6 @@ public:
 };
 
 }  // namespace file
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_FILE_XFILE_H_
+#endif  // AURA_FILE_XFILE_H_

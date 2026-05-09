@@ -1,6 +1,6 @@
 #include "regex/xregex.h"
 
-namespace algernon {
+namespace au {
 namespace regex {
 
 bool match(const std::string& content, const std::string& pattern)
@@ -84,4 +84,4 @@ std::vector<std::string> split(const std::string& content, const std::string& pa
 }
 
 }  // namespace regex
-}  // namespace algernon
+}  // namespace au

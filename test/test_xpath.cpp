@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "file/xpath.h"
 
-using algernon::file::XPath;
+using au::file::XPath;
 
 TEST(XPath, Construction) {
     XPath p("/tmp/test/file.txt");

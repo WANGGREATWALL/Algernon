@@ -6,22 +6,22 @@
 #include <fstream>
 #include <sstream>
 
-#ifdef ALGERNON_OS_WINDOWS
+#ifdef AURA_OS_WINDOWS
 #include <Windows.h>
-#elif defined(ALGERNON_OS_APPLE)
+#elif defined(AURA_OS_APPLE)
 #include <sys/sysctl.h>
 #include <mach/mach.h>
 #include <unistd.h>
-#elif defined(ALGERNON_OS_LINUX)
+#elif defined(AURA_OS_LINUX)
 #include <unistd.h>
 #include <sys/sysinfo.h>
 #endif
 
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
 #include <sys/system_properties.h>
 #endif
 
-namespace algernon { namespace sys {
+namespace au { namespace sys {
 
 // ============================================================================
 // Platform / Arch name strings
@@ -55,7 +55,7 @@ const char* archName(Arch a) {
 // ============================================================================
 
 SocVendor getSocVendor() {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     char buf[PROP_VALUE_MAX] = {0};
     __system_property_get("ro.hardware", buf);
     std::string hw(buf);
@@ -73,7 +73,7 @@ SocVendor getSocVendor() {
     if (hw.find("kirin") != std::string::npos || hw.find("hi") != std::string::npos) {
         return SocVendor::HiSilicon;
     }
-#elif defined(ALGERNON_OS_APPLE)
+#elif defined(AURA_OS_APPLE)
     return SocVendor::Apple;
 #endif
     return SocVendor::Unknown;
@@ -87,14 +87,14 @@ CpuInfo getCpuInfo() {
     CpuInfo info;
     info.arch = kBuildArch;
 
-#ifdef ALGERNON_OS_WINDOWS
+#ifdef AURA_OS_WINDOWS
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     info.coreCount = static_cast<int>(si.dwNumberOfProcessors);
     info.onlineCoreCount = info.coreCount;
     info.modelName = "Unknown (Windows)";
 
-#elif defined(ALGERNON_OS_APPLE)
+#elif defined(AURA_OS_APPLE)
     int ncpu = 0;
     size_t len = sizeof(ncpu);
     sysctlbyname("hw.physicalcpu", &ncpu, &len, nullptr, 0);
@@ -108,7 +108,7 @@ CpuInfo getCpuInfo() {
     sysctlbyname("machdep.cpu.brand_string", model, &len, nullptr, 0);
     info.modelName = model;
 
-#elif defined(ALGERNON_OS_LINUX)
+#elif defined(AURA_OS_LINUX)
     info.coreCount = static_cast<int>(sysconf(_SC_NPROCESSORS_CONF));
     info.onlineCoreCount = static_cast<int>(sysconf(_SC_NPROCESSORS_ONLN));
 
@@ -136,14 +136,14 @@ CpuInfo getCpuInfo() {
 MemoryInfo getMemoryInfo() {
     MemoryInfo info;
 
-#ifdef ALGERNON_OS_WINDOWS
+#ifdef AURA_OS_WINDOWS
     MEMORYSTATUSEX ms;
     ms.dwLength = sizeof(ms);
     GlobalMemoryStatusEx(&ms);
     info.totalBytes = ms.ullTotalPhys;
     info.availableBytes = ms.ullAvailPhys;
 
-#elif defined(ALGERNON_OS_APPLE)
+#elif defined(AURA_OS_APPLE)
     int64_t mem = 0;
     size_t len = sizeof(mem);
     sysctlbyname("hw.memsize", &mem, &len, nullptr, 0);
@@ -156,7 +156,7 @@ MemoryInfo getMemoryInfo() {
         info.availableBytes = static_cast<uint64_t>(vmstat.free_count) * vm_page_size;
     }
 
-#elif defined(ALGERNON_OS_LINUX)
+#elif defined(AURA_OS_LINUX)
     struct sysinfo si;
     sysinfo(&si);
     info.totalBytes = static_cast<uint64_t>(si.totalram) * si.mem_unit;
@@ -173,14 +173,14 @@ MemoryInfo getMemoryInfo() {
 std::vector<GpuInfo> getGpuInfo() {
     std::vector<GpuInfo> gpus;
 
-#ifdef ALGERNON_OS_APPLE
+#ifdef AURA_OS_APPLE
     // macOS: use system_profiler would require subprocess; return placeholder
     GpuInfo info;
     info.name = "Apple GPU";
     info.vendor = "Apple";
     gpus.push_back(info);
 
-#elif defined(ALGERNON_OS_LINUX) && !defined(ALGERNON_OS_ANDROID)
+#elif defined(AURA_OS_LINUX) && !defined(AURA_OS_ANDROID)
     // Try reading /proc/driver/nvidia/gpus/*/information
     // Or lspci parsing; for now return empty
 #endif
@@ -193,7 +193,7 @@ std::vector<GpuInfo> getGpuInfo() {
 // ============================================================================
 
 bool setEnv(const char* name, const char* value) {
-#ifdef ALGERNON_OS_WINDOWS
+#ifdef AURA_OS_WINDOWS
     return _putenv_s(name, value) == 0;
 #else
     return setenv(name, value, 1) == 0;
@@ -210,7 +210,7 @@ bool hasEnv(const char* name) {
 }
 
 std::string getSystemPropertyValue(const char* name, const char* defaultValue) {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     char prop[PROP_VALUE_MAX] = {0};
     if (__system_property_get(name, prop) > 0) {
         return std::string(prop);
@@ -220,7 +220,7 @@ std::string getSystemPropertyValue(const char* name, const char* defaultValue) {
 }
 
 int getSystemPropertyValue(const char* name, int defaultValue) {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     char prop[PROP_VALUE_MAX] = {0};
     if (__system_property_get(name, prop) > 0) {
         if (std::strlen(prop) > 0) {
@@ -232,7 +232,7 @@ int getSystemPropertyValue(const char* name, int defaultValue) {
 }
 
 float getSystemPropertyValue(const char* name, float defaultValue) {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     char prop[PROP_VALUE_MAX] = {0};
     if (__system_property_get(name, prop) > 0) {
         if (std::strlen(prop) > 0) {
@@ -244,7 +244,7 @@ float getSystemPropertyValue(const char* name, float defaultValue) {
 }
 
 bool setSystemPropertyValue(const char* name, const char* value) {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     return __system_property_set(name, value ? value : "") == 0;
 #else
     return false;
@@ -252,7 +252,7 @@ bool setSystemPropertyValue(const char* name, const char* value) {
 }
 
 bool setSystemPropertyValue(const char* name, int value) {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     std::string valStr = std::to_string(value);
     return __system_property_set(name, valStr.c_str()) == 0;
 #else
@@ -261,7 +261,7 @@ bool setSystemPropertyValue(const char* name, int value) {
 }
 
 bool setSystemPropertyValue(const char* name, float value) {
-#ifdef ALGERNON_OS_ANDROID
+#ifdef AURA_OS_ANDROID
     std::string valStr = std::to_string(value);
     return __system_property_set(name, valStr.c_str()) == 0;
 #else
@@ -275,7 +275,7 @@ bool setSystemPropertyValue(const char* name, float value) {
 
 std::string getHostName() {
     char buf[256] = {0};
-#ifdef ALGERNON_OS_WINDOWS
+#ifdef AURA_OS_WINDOWS
     DWORD size = sizeof(buf);
     GetComputerNameA(buf, &size);
 #else
@@ -288,4 +288,4 @@ int getHardwareConcurrency() {
     return static_cast<int>(std::thread::hardware_concurrency());
 }
 
-}} // namespace algernon::sys
+}}  // namespace au::sys

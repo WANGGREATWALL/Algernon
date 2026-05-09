@@ -1,5 +1,5 @@
-#ifndef ALGERNON_UTIL_XARGS_H_
-#define ALGERNON_UTIL_XARGS_H_
+#ifndef AURA_UTIL_XARGS_H_
+#define AURA_UTIL_XARGS_H_
 
 /**
  * @file xargs.h
@@ -16,8 +16,8 @@
  * @example
  *   int level = 0;
  *   bool help = false;
- *   algernon::util::XArgs parser([&](char s, const std::string& l,
- *                                     algernon::util::XArgs::Value& v) {
+ *   au::util::XArgs parser([&](char s, const std::string& l,
+ *                                     au::util::XArgs::Value& v) {
  *       if (s == 'h' || l == "help") help = true;
  *       else if (s == 'l' || l == "level") level = std::stoi(v.get());
  *       else return false;
@@ -30,7 +30,7 @@
 #include <vector>
 #include <functional>
 
-namespace algernon { namespace util {
+namespace au { namespace util {
 
 class XArgs {
 public:
@@ -62,6 +62,6 @@ private:
     Handler mHandler;
 };
 
-}} // namespace algernon::util
+}}  // namespace au::util
 
-#endif // ALGERNON_UTIL_XARGS_H_
+#endif // AURA_UTIL_XARGS_H_

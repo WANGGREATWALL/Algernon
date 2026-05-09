@@ -1,12 +1,12 @@
-#ifndef ALGERNON_REGEX_XREGEX_H_
-#define ALGERNON_REGEX_XREGEX_H_
+#ifndef AURA_REGEX_XREGEX_H_
+#define AURA_REGEX_XREGEX_H_
 
 /**
  * @file xregex.h
  * @brief Regex utilities: match, search, extract, replace, split.
  *
  * @example
- *   using namespace algernon::regex;
+ *   using namespace au::regex;
  *
  *   // Check if pattern exists in text
  *   bool ok = match("Hello World", "Hello");
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace algernon {
+namespace au {
 namespace regex {
 
 /**
@@ -85,6 +85,6 @@ std::string replaceNth(const std::string& content, const std::string& pattern, c
 std::vector<std::string> split(const std::string& content, const std::string& pattern);
 
 }  // namespace regex
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_REGEX_XREGEX_H_
+#endif  // AURA_REGEX_XREGEX_H_

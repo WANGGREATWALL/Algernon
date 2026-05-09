@@ -4,7 +4,7 @@
 #include <vector>
 #include <functional>
 
-using namespace algernon::perf;
+using namespace au::perf;
 
 static std::string captureStdout(const std::function<void()>& fn) {
     testing::internal::CaptureStdout();

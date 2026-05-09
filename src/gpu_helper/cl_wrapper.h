@@ -19,7 +19,7 @@
 #include "cl_symbols.h"
 #include "cv/ximage.h"
 
-using algernon::cv::Image;
+using au::cv::Image;
 
 
 namespace gpu {

@@ -1,17 +1,17 @@
-#ifndef ALGERNON_PERF_XTIMER_H_
-#define ALGERNON_PERF_XTIMER_H_
+#ifndef AURA_PERF_XTIMER_H_
+#define AURA_PERF_XTIMER_H_
 
 /**
  * @file xtimer.h
  * @brief High-resolution timer and scoped timer tree for performance profiling.
  *
  * @example
- *   algernon::perf::XTimer t;
+ *   au::perf::XTimer t;
  *   // ... do work ...
  *   float ms = t.elapsed();
  *
  *   {
- *       algernon::perf::XTimerScoped s("myFunction");
+ *       au::perf::XTimerScoped s("myFunction");
  *       // ... measured block ...
  *       s.sub("phase1");
  *       // ... phase1 work ...
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 /** @brief Set the root name of the global timer tree. */
@@ -81,6 +81,6 @@ private:
 };
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au
 
-#endif  // ALGERNON_PERF_XTIMER_H_
+#endif  // AURA_PERF_XTIMER_H_

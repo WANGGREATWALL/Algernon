@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "sys/xplatform.h"
 
-using namespace algernon::sys;
+using namespace au::sys;
 
 TEST(XPlatform, BuildPlatform) {
 #ifdef __APPLE__
@@ -25,9 +25,9 @@ TEST(XPlatform, MemoryInfo) {
 }
 
 TEST(XPlatform, EnvVars) {
-    EXPECT_TRUE(setEnv("ALGERNON_TEST_VAR", "hello"));
-    EXPECT_TRUE(hasEnv("ALGERNON_TEST_VAR"));
-    EXPECT_EQ(getEnv("ALGERNON_TEST_VAR"), "hello");
+    EXPECT_TRUE(setEnv("AURA_TEST_VAR", "hello"));
+    EXPECT_TRUE(hasEnv("AURA_TEST_VAR"));
+    EXPECT_EQ(getEnv("AURA_TEST_VAR"), "hello");
 }
 
 TEST(XPlatform, HostName) {

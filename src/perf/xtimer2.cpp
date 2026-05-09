@@ -7,7 +7,7 @@
 
 #include "log/xlogger.h"
 
-namespace algernon {
+namespace au {
 namespace perf {
 
 // ── XPerfContext ──
@@ -244,4 +244,4 @@ XTimer2Scoped::~XTimer2Scoped()
 }
 
 }  // namespace perf
-}  // namespace algernon
+}  // namespace au

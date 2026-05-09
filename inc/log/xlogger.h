@@ -42,6 +42,7 @@
 
 #include "sys/xplatform.h"
 
+namespace au {
 namespace log {
 
 enum class Level : int
@@ -77,7 +78,7 @@ public:
     void setColorEnabled(bool on) noexcept { mColorEnabled.store(on, std::memory_order_relaxed); }
     bool isColorEnabled() const noexcept { return mColorEnabled.load(std::memory_order_relaxed); }
 
-#if ALGERNON_OS_ANDROID
+#if AURA_OS_ANDROID
     void setShellPrintEnabled(bool on) noexcept { mShellPrint.store(on, std::memory_order_relaxed); }
 
     bool isShellPrintEnabled() const noexcept { return mShellPrint.load(std::memory_order_relaxed); }
@@ -90,7 +91,7 @@ private:
 
     std::atomic<Level> mLevel{Level::Info};
     std::atomic<bool>  mColorEnabled{true};
-#if ALGERNON_OS_ANDROID
+#if AURA_OS_ANDROID
     std::atomic<bool> mShellPrint{false};
 #endif
 };
@@ -119,61 +120,63 @@ void logPrintFLoc(Level level, const char* file, int line, const char* fmt, ...)
 
 }  // namespace detail
 }  // namespace log
+}  // namespace au
 
 // ── Public logging macros ──
 
 // Internal: level check + dispatch without location (V/D/I).
-#define XLOG_IMPL(lvl, fmt, ...)                               \
-    do {                                                       \
-        if ((lvl) >= log::Config::get().getLevel()) {          \
-            log::detail::logPrintF((lvl), fmt, ##__VA_ARGS__); \
-        }                                                      \
+#define XLOG_IMPL(lvl, fmt, ...)                                     \
+    do {                                                             \
+        if ((lvl) >= ::au::log::Config::get().getLevel()) {          \
+            ::au::log::detail::logPrintF((lvl), fmt, ##__VA_ARGS__); \
+        }                                                            \
     } while (0)
 
 // Internal: level check + dispatch with (file:line) (W/E/F).
-#define XLOG_IMPL_LOC(lvl, fmt, ...)                                                                         \
-    do {                                                                                                     \
-        if ((lvl) >= log::Config::get().getLevel()) {                                                        \
-            log::detail::logPrintFLoc((lvl), log::detail::basename(__FILE__), __LINE__, fmt, ##__VA_ARGS__); \
-        }                                                                                                    \
+#define XLOG_IMPL_LOC(lvl, fmt, ...)                                                                     \
+    do {                                                                                                 \
+        if ((lvl) >= ::au::log::Config::get().getLevel()) {                                              \
+            ::au::log::detail::logPrintFLoc((lvl), ::au::log::detail::basename(__FILE__), __LINE__, fmt, \
+                                            ##__VA_ARGS__);                                              \
+        }                                                                                                \
     } while (0)
 
 // clang-format off
-#define XLOG_V(fmt, ...) XLOG_IMPL(log::Level::Verbose, fmt, ##__VA_ARGS__)
-#define XLOG_D(fmt, ...) XLOG_IMPL(log::Level::Debug,   fmt, ##__VA_ARGS__)
-#define XLOG_I(fmt, ...) XLOG_IMPL(log::Level::Info,    fmt, ##__VA_ARGS__)
-#define XLOG_W(fmt, ...) XLOG_IMPL_LOC(log::Level::Warn,  fmt, ##__VA_ARGS__)
-#define XLOG_E(fmt, ...) XLOG_IMPL_LOC(log::Level::Error, fmt, ##__VA_ARGS__)
-#define XLOG_F(fmt, ...) XLOG_IMPL_LOC(log::Level::Fatal, fmt, ##__VA_ARGS__)
+#define XLOG_V(fmt, ...) XLOG_IMPL(::au::log::Level::Verbose, fmt, ##__VA_ARGS__)
+#define XLOG_D(fmt, ...) XLOG_IMPL(::au::log::Level::Debug,   fmt, ##__VA_ARGS__)
+#define XLOG_I(fmt, ...) XLOG_IMPL(::au::log::Level::Info,    fmt, ##__VA_ARGS__)
+#define XLOG_W(fmt, ...) XLOG_IMPL_LOC(::au::log::Level::Warn,  fmt, ##__VA_ARGS__)
+#define XLOG_E(fmt, ...) XLOG_IMPL_LOC(::au::log::Level::Error, fmt, ##__VA_ARGS__)
+#define XLOG_F(fmt, ...) XLOG_IMPL_LOC(::au::log::Level::Fatal, fmt, ##__VA_ARGS__)
 // clang-format on
 
 // ── Assertion / check macros ──
 
-#define XCHECK(expr)                                                                                \
-    do {                                                                                            \
-        if (!(expr)) {                                                                              \
-            log::detail::logPrintFLoc(log::Level::Fatal, log::detail::basename(__FILE__), __LINE__, \
-                                      "check failed: '%s'\n", #expr);                               \
-            std::abort();                                                                           \
-        }                                                                                           \
+#define XCHECK(expr)                                                                                                  \
+    do {                                                                                                              \
+        if (!(expr)) {                                                                                                \
+            ::au::log::detail::logPrintFLoc(::au::log::Level::Fatal, ::au::log::detail::basename(__FILE__), __LINE__, \
+                                            "check failed: '%s'\n", #expr);                                           \
+            std::abort();                                                                                             \
+        }                                                                                                             \
     } while (0)
 
-#define XCHECK_WITH_RET(expr, ret)                                                                  \
-    do {                                                                                            \
-        if (!(expr)) {                                                                              \
-            log::detail::logPrintFLoc(log::Level::Error, log::detail::basename(__FILE__), __LINE__, \
-                                      "check failed: '%s'\n", #expr);                               \
-            return (ret);                                                                           \
-        }                                                                                           \
+#define XCHECK_WITH_RET(expr, ret)                                                                                    \
+    do {                                                                                                              \
+        if (!(expr)) {                                                                                                \
+            ::au::log::detail::logPrintFLoc(::au::log::Level::Error, ::au::log::detail::basename(__FILE__), __LINE__, \
+                                            "check failed: '%s'\n", #expr);                                           \
+            return (ret);                                                                                             \
+        }                                                                                                             \
     } while (0)
 
-#define XCHECK_WITH_MSG(expr, ret, fmt, ...)                                                             \
-    do {                                                                                                 \
-        if (!(expr)) {                                                                                   \
-            log::detail::logPrintFLoc(log::Level::Error, log::detail::basename(__FILE__), __LINE__, fmt, \
-                                      ##__VA_ARGS__);                                                    \
-            return (ret);                                                                                \
-        }                                                                                                \
+#define XCHECK_WITH_MSG(expr, ret, fmt, ...)                                                                          \
+    do {                                                                                                              \
+        if (!(expr)) {                                                                                                \
+            ::au::log::detail::logPrintFLoc(::au::log::Level::Error, ::au::log::detail::basename(__FILE__), __LINE__, \
+                                            fmt, ##__VA_ARGS__);                                                      \
+            return (ret);                                                                                             \
+        }                                                                                                             \
     } while (0)
 
 #endif  // XLOGGER_H

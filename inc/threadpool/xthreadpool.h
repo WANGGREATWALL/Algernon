@@ -1,12 +1,12 @@
-#ifndef ALGERNON_THREADPOOL_XTHREADPOOL_H_
-#define ALGERNON_THREADPOOL_XTHREADPOOL_H_
+#ifndef AURA_THREADPOOL_XTHREADPOOL_H_
+#define AURA_THREADPOOL_XTHREADPOOL_H_
 
 /**
  * @file xthreadpool.h
  * @brief Thread pool for concurrent task execution.
  *
  * @example
- *   algernon::framework::XThreadpool pool(4);
+ *   au::framework::XThreadpool pool(4);
  *   auto f1 = pool.enqueue([](int a) { return a * 2; }, 21);
  *   auto f2 = pool.enqueue([]() { return std::string("hello"); });
  *   printf("%d %s\n", f1.get(), f2.get().c_str());
@@ -22,7 +22,7 @@
 #include <functional>
 #include <stdexcept>
 
-namespace algernon { namespace framework {
+namespace au { namespace framework {
 
 class XThreadpool {
 public:
@@ -49,8 +49,8 @@ private:
     bool                               mStopped = false;
 };
 
-}} // namespace algernon::framework
+}}  // namespace au::framework
 
 #include "xthreadpool.impl.h"
 
-#endif // ALGERNON_THREADPOOL_XTHREADPOOL_H_
+#endif // AURA_THREADPOOL_XTHREADPOOL_H_
