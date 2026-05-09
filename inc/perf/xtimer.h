@@ -20,12 +20,13 @@
  *   }  // prints timing tree on destruction
  */
 
-#include <string>
-#include <vector>
 #include <chrono>
 #include <cstddef>
+#include <string>
+#include <vector>
 
-namespace algernon { namespace perf {
+namespace algernon {
+namespace perf {
 
 /** @brief Set the root name of the global timer tree. */
 void setTimerRootName(const std::string& name);
@@ -36,8 +37,9 @@ void setPerfVisibleLevel(size_t level);
 /** @brief Get the current visible depth level. */
 size_t getPerfVisibleLevel();
 
-class XTimer {
-    using Clock    = std::chrono::steady_clock;
+class XTimer
+{
+    using Clock     = std::chrono::steady_clock;
     using TimePoint = Clock::time_point;
     using Duration  = std::chrono::duration<float, std::milli>;
 
@@ -60,7 +62,8 @@ private:
     TimePoint mBegin;
 };
 
-class XTimerScoped {
+class XTimerScoped
+{
 public:
     explicit XTimerScoped(const std::string& name);
     ~XTimerScoped();
@@ -77,6 +80,7 @@ private:
     size_t mLevelBegin;
 };
 
-}} // namespace algernon::perf
+}  // namespace perf
+}  // namespace algernon
 
-#endif // ALGERNON_PERF_XTIMER_H_
+#endif  // ALGERNON_PERF_XTIMER_H_

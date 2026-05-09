@@ -52,7 +52,9 @@ set(ALGERNON_SOURCES
     src/log/xlogger.cpp
     src/cv/ximage.cpp
     src/perf/xtimer.cpp
+    src/perf/xtimer2.cpp
     src/perf/xtracer.cpp
+    src/perf/xtracer2.cpp
     src/util/xargs.cpp
     third_party/cJSON/cJSON.c
 )
@@ -90,6 +92,8 @@ add_executable(algernon_test
     test/test_xargs.cpp
     test/test_xpath.cpp
     test/test_xtimer.cpp
+    test/test_xtimer2.cpp
+    test/test_xtracer2.cpp
     test/test_xlogger.cpp
     test/test_xplatform.cpp
     ${GTEST_SOURCES}

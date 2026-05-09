@@ -54,6 +54,7 @@ namespace err {
     XX(kErrorAlreadyExists   , -1015, "ErrorAlreadyExists"   , "Duplicate creation/registration rejected"                       ) \
     XX(kErrorTimeout         , -1016, "ErrorTimeout"         , "Operation did not complete within the allotted time"            ) \
     XX(kErrorAborted         , -1017, "ErrorAborted"         , "Operation was cancelled by the caller or an external signal"    ) \
+    XX(kErrorExpired         , -1018, "ErrorExpired"         , "License, token, session, or time-limited resource has expired"  ) \
     XX(kErrorUnknown         , -1099, "ErrorUnknown"         , "Catch-all; always prefer a specific code over this"             ) \
     /* --- File & IO Errors (-2000 ~ -2999) --- */ \
     XX(kErrorFileNotFound    , -2001, "ErrorFileNotFound"    , "File path does not exist"                                       ) \
@@ -73,7 +74,8 @@ namespace err {
     XX(kErrorNoMemory        , -4001, "ErrorNoMemory"        , "malloc/new returned null; system out of memory"                 ) \
     XX(kErrorInvalidAddr     , -4002, "ErrorInvalidAddr"     , "Pointer is not owned by this allocator/pool"                    ) \
     XX(kErrorInvalidSize     , -4003, "ErrorInvalidSize"     , "Allocation size is zero or exceeds the pool's block limit"      ) \
-    XX(kErrorAlignmentFault  , -4004, "ErrorAlignmentFault"  , "Buffer or allocation does not satisfy required alignment"       )
+    XX(kErrorAlignmentFault  , -4004, "ErrorAlignmentFault"  , "Buffer or allocation does not satisfy required alignment"       ) \
+    XX(kErrorBufferUnderflow , -4005, "ErrorBufferUnderflow" , "Buffer has insufficient data; read would exceed available bytes")
 // clang-format on
 
 // Generate constexpr int definitions
@@ -84,10 +86,7 @@ XERROR_MAP(XX_ENUM)
 /**
  * @brief Check if the return value represents an error.
  */
-inline bool isError(int code)
-{
-    return code < 0;
-}
+inline bool isError(int code) { return code < 0; }
 
 /**
  * @brief Convert an error code to a readable string.

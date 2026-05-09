@@ -1,4 +1,5 @@
 #include "perf/xtracer.h"
+
 #include "log/xlogger.h"
 
 #ifdef ALGERNON_OS_ANDROID
@@ -6,52 +7,64 @@
 #include <unistd.h>
 #endif
 
-namespace algernon { namespace perf {
+namespace algernon {
+namespace perf {
 
 namespace {
 
-enum TraceMode { kBegin = 0, kEnd };
+enum TraceMode
+{
+    kBegin = 0,
+    kEnd
+};
 
-int openTraceFile() {
+int openTraceFile()
+{
 #ifdef ALGERNON_OS_ANDROID
     int fd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
-    if (fd == -1) fd = open("/sys/kernel/tracing/trace_marker", O_WRONLY);
+    if (fd == -1)
+        fd = open("/sys/kernel/tracing/trace_marker", O_WRONLY);
     return fd;
 #else
     return -1;
 #endif
 }
 
-void closeTraceFile(int fd) {
+void closeTraceFile(int fd)
+{
 #ifdef ALGERNON_OS_ANDROID
-    if (fd >= 0) close(fd);
+    if (fd >= 0)
+        close(fd);
 #else
     (void)fd;
 #endif
 }
 
-void writeTraceMessage([[maybe_unused]] int fd,
-                       [[maybe_unused]] const std::string& name,
-                       [[maybe_unused]] TraceMode mode) {
+void writeTraceMessage([[maybe_unused]] int fd, [[maybe_unused]] const std::string& name,
+                       [[maybe_unused]] TraceMode mode)
+{
 #ifdef ALGERNON_OS_ANDROID
-    if (fd < 0) return;
+    if (fd < 0)
+        return;
     std::string msg = (mode == kBegin ? "B|" : "E|") + std::to_string(getpid()) + "|" + name;
     write(fd, msg.c_str(), msg.size());
 #endif
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
-XTracerScoped::XTracerScoped(const std::string& name) {
+XTracerScoped::XTracerScoped(const std::string& name)
+{
     mTimer = std::make_unique<XTimerScoped>(name);
     if (mTimer->getLevel() <= getPerfVisibleLevel()) {
         mNameMain = name;
-        mFdTrace = openTraceFile();
+        mFdTrace  = openTraceFile();
         writeTraceMessage(mFdTrace, name, kBegin);
     }
 }
 
-XTracerScoped::~XTracerScoped() {
+XTracerScoped::~XTracerScoped()
+{
     if (mTimer && mTimer->getLevel() <= getPerfVisibleLevel()) {
         if (!mNameNode.empty()) {
             writeTraceMessage(mFdTrace, mNameNode, kEnd);
@@ -61,16 +74,19 @@ XTracerScoped::~XTracerScoped() {
     }
 }
 
-void XTracerScoped::sub(const std::string& name) {
+void XTracerScoped::sub(const std::string& name)
+{
     if (mTimer && mTimer->getLevel() < getPerfVisibleLevel()) {
         mTimer->sub(name);
-        if (!mNameNode.empty()) writeTraceMessage(mFdTrace, mNameNode, kEnd);
+        if (!mNameNode.empty())
+            writeTraceMessage(mFdTrace, mNameNode, kEnd);
         mNameNode = name;
         writeTraceMessage(mFdTrace, name, kBegin);
     }
 }
 
-void XTracerScoped::sub() {
+void XTracerScoped::sub()
+{
     if (mTimer && mTimer->getLevel() < getPerfVisibleLevel()) {
         mTimer->sub();
         if (!mNameNode.empty()) {
@@ -80,4 +96,5 @@ void XTracerScoped::sub() {
     }
 }
 
-}} // namespace algernon::perf
+}  // namespace perf
+}  // namespace algernon

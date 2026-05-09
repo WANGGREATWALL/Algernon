@@ -1,17 +1,19 @@
 <p align="center">
 <code>
-       ___    __                                     
-      /   |  / /___  ___  _________  ____  ____      
-     / /| | / / __ `/ _ \/ ___/ __ \/ __ \/ __ \     
-    / ___ |/ / /_/ /  __/ /  / / / / /_/ / / / /     
-   /_/  |_/_/\__, /\___/_/  /_/ /_/\____/_/ /_/      
-            /____/                                   
+   ------    ----    ---- -----------     ------    
+  ********   ****    **** ***********    ********   
+ ----------  ----    ---- ----    ---   ----------  
+****    **** ****    **** *********    ****    **** 
+------------ ----    ---- ---------    ------------ 
+************ ************ ****  ****   ************ 
+----    ---- ------------ ----   ----  ----    ---- 
+****    **** ************ ****    **** ****    **** 
 </code>
 </p>
 
-# *𝔸𝕝𝕘𝕖𝕣𝕟𝕠𝕟*
+# *𝔸𝕦𝕣𝕒*
 
-A modern, high-performance, and lightweight C++17 infrastructure library for building efficient and scalable applications. Algernon provides a curated set of cross-platform components focusing on memory management, multithreading, filesystem operations, and high-performance logging.
+A modern, high-performance, and lightweight C++17 infrastructure library for building efficient and scalable applications. Aura provides a curated set of cross-platform components focusing on memory management, multithreading, filesystem operations, and high-performance logging.
 
 ## Features
 
@@ -24,19 +26,19 @@ A modern, high-performance, and lightweight C++17 infrastructure library for bui
 
 ## Integration
 
-Algernon is designed to be easily embedded into larger projects via CMake.
+Aura is designed to be easily embedded into larger projects via CMake.
 
 ```cmake
-# Add Algernon as a subdirectory
-add_subdirectory(third_party/Algernon)
+# Add Aura as a subdirectory
+add_subdirectory(third_party/Aura)
 
 # Link against the static library
-target_link_libraries(my_app PRIVATE algernon)
+target_link_libraries(my_app PRIVATE aura)
 ```
 
 Include the umbrella header to access all functionalities:
 ```cpp
-#include "algernon/algernon.h"
+#include "aura/aura.h"
 ```
 
 ## Building & Testing
@@ -47,7 +49,7 @@ Requires CMake 3.14+ and a C++17 compliant compiler.
 mkdir build && cd build
 cmake ..
 make -j$(sysctl -n hw.ncpu)
-./algernon_test
+./aura_test
 ```
 
 ## License

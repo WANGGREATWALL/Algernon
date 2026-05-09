@@ -18,13 +18,16 @@
  *   }
  */
 
-#include <string>
 #include <memory>
+#include <string>
+
 #include "perf/xtimer.h"
 
-namespace algernon { namespace perf {
+namespace algernon {
+namespace perf {
 
-class XTracerScoped {
+class XTracerScoped
+{
 public:
     explicit XTracerScoped(const std::string& name);
     ~XTracerScoped();
@@ -37,11 +40,12 @@ public:
 
 private:
     std::unique_ptr<XTimerScoped> mTimer;
-    int mFdTrace = -1;
-    std::string mNameMain;
-    std::string mNameNode;
+    int                           mFdTrace = -1;
+    std::string                   mNameMain;
+    std::string                   mNameNode;
 };
 
-}} // namespace algernon::perf
+}  // namespace perf
+}  // namespace algernon
 
-#endif // ALGERNON_PERF_XTRACER_H_
+#endif  // ALGERNON_PERF_XTRACER_H_
