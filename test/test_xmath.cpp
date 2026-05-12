@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XMATH
+
 #include "gtest/gtest.h"
 #include "math/xmath.h"
 
@@ -62,3 +64,5 @@ TEST(XMath, Trig) {
     EXPECT_NEAR(deg2rad(180.0), kPi, kEpsilonD);
     EXPECT_NEAR(rad2deg(kPi), 180.0, kEpsilonD);
 }
+
+#endif  // ENABLE_TEST_XMATH

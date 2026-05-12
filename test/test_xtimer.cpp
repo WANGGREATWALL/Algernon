@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XTIMER
+
 #include "gtest/gtest.h"
 #include "perf/xtimer.h"
 
@@ -24,3 +26,5 @@ TEST(XTimer, TimeFormatted) {
     EXPECT_FALSE(s.empty());
     EXPECT_GE(s.size(), 10u);
 }
+
+#endif  // ENABLE_TEST_XTIMER

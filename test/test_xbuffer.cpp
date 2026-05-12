@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XBUFFER
+
 #include "gtest/gtest.h"
 #include "memory/xbuffer.h"
 
@@ -49,3 +51,5 @@ TEST(XBuffer, Clear) {
     EXPECT_TRUE(buf.empty());
     EXPECT_EQ(buf.data(), nullptr);
 }
+
+#endif  // ENABLE_TEST_XBUFFER

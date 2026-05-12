@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XPLATFORM
+
 #include "gtest/gtest.h"
 #include "sys/xplatform.h"
 
@@ -37,3 +39,5 @@ TEST(XPlatform, HostName) {
 TEST(XPlatform, HardwareConcurrency) {
     EXPECT_GT(getHardwareConcurrency(), 0);
 }
+
+#endif  // ENABLE_TEST_XPLATFORM

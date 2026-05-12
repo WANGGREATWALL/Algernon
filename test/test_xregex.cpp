@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XREGEX
+
 #include "gtest/gtest.h"
 #include "regex/xregex.h"
 
@@ -50,3 +52,5 @@ TEST(XRegex, Split) {
     EXPECT_EQ(parts[2], "");
     EXPECT_EQ(parts[3], "c");
 }
+
+#endif  // ENABLE_TEST_XREGEX

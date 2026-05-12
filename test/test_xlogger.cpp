@@ -1,4 +1,4 @@
-#if 1  // ENABLE_TEST_XLOGGER
+#if ENABLE_TEST_XLOGGER
 
 #include <sstream>
 #include <string>

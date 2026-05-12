@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XPATH
+
 #include "gtest/gtest.h"
 #include "file/xpath.h"
 
@@ -37,3 +39,5 @@ TEST(XPath, EmptyPath) {
     XPath p;
     EXPECT_TRUE(p.isEmpty());
 }
+
+#endif  // ENABLE_TEST_XPATH

@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XTIMER2
+
 #include "perf/xtimer2.h"
 #include <gtest/gtest.h>
 #include <thread>
@@ -167,3 +169,5 @@ TEST(XTimer2Test, DisabledTimerBehavior) {
     });
     EXPECT_TRUE(out.empty());
 }
+
+#endif  // ENABLE_TEST_XTIMER2

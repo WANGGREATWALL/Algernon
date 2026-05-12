@@ -53,8 +53,10 @@ set(AURA_SOURCES
     src/cv/ximage.cpp
     src/perf/xtimer.cpp
     src/perf/xtimer2.cpp
+    src/perf/xtimer3.cpp
     src/perf/xtracer.cpp
     src/perf/xtracer2.cpp
+    src/perf/xtracer3.cpp
     src/util/xargs.cpp
     third_party/cJSON/cJSON.c
 )
@@ -68,6 +70,22 @@ target_include_directories(aura PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON
 )
+
+# ============================================================================
+# Test options (set to OFF to disable individual unit tests)
+# ============================================================================
+option(ENABLE_TEST_XLOGGER   "Enable xlogger unit test"   ON)
+option(ENABLE_TEST_XMATH     "Enable xmath unit test"     ON)
+option(ENABLE_TEST_XBUFFER   "Enable xbuffer unit test"   ON)
+option(ENABLE_TEST_XREGEX    "Enable xregex unit test"    ON)
+option(ENABLE_TEST_XARGS     "Enable xargs unit test"     ON)
+option(ENABLE_TEST_XPATH     "Enable xpath unit test"     ON)
+option(ENABLE_TEST_XTIMER    "Enable xtimer unit test"    ON)
+option(ENABLE_TEST_XTIMER2   "Enable xtimer2 unit test"   ON)
+option(ENABLE_TEST_XTIMER3   "Enable xtimer3 unit test"   ON)
+option(ENABLE_TEST_XTRACER2  "Enable xtracer2 unit test"  ON)
+option(ENABLE_TEST_XTRACER3  "Enable xtracer3 unit test"  ON)
+option(ENABLE_TEST_XPLATFORM "Enable xplatform unit test" ON)
 
 # ============================================================================
 # Tests
@@ -84,20 +102,33 @@ set(GTEST_SOURCES
     third_party/gtest/src/gtest.cpp
 )
 
-add_executable(aura_test
-    test/main.cpp
-    test/test_xmath.cpp
-    test/test_xbuffer.cpp
-    test/test_xregex.cpp
-    test/test_xargs.cpp
-    test/test_xpath.cpp
-    test/test_xtimer.cpp
-    test/test_xtimer2.cpp
-    test/test_xtracer2.cpp
-    test/test_xlogger.cpp
-    test/test_xplatform.cpp
-    ${GTEST_SOURCES}
-)
+set(AURA_TEST_SOURCES test/main.cpp ${GTEST_SOURCES})
+set(AURA_TEST_DEFINITIONS "")
+
+# Conditionally add test sources and record compile definitions
+macro(aura_add_test NAME)
+    string(TOUPPER ${NAME} NAME_UPPER)
+    if(ENABLE_TEST_${NAME_UPPER})
+        list(APPEND AURA_TEST_SOURCES test/test_${NAME}.cpp)
+        list(APPEND AURA_TEST_DEFINITIONS ENABLE_TEST_${NAME_UPPER}=1)
+    endif()
+endmacro()
+
+aura_add_test(xlogger)
+aura_add_test(xmath)
+aura_add_test(xbuffer)
+aura_add_test(xregex)
+aura_add_test(xargs)
+aura_add_test(xpath)
+aura_add_test(xtimer)
+aura_add_test(xtimer2)
+aura_add_test(xtimer3)
+aura_add_test(xtracer2)
+aura_add_test(xtracer3)
+aura_add_test(xplatform)
+
+add_executable(aura_test ${AURA_TEST_SOURCES})
+target_compile_definitions(aura_test PRIVATE ${AURA_TEST_DEFINITIONS})
 
 target_include_directories(aura_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest
