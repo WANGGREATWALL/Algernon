@@ -1,4 +1,4 @@
-#if 1  // ENABLE_TEST_XLOGGER
+#if ENABLE_TEST_XLOGGER
 
 #include <sstream>
 #include <string>
@@ -23,7 +23,7 @@ protected:
         Config::get().setTag("XLoggerTest");
         Config::get().setLevel(log::Level::Verbose);
         Config::get().setColorEnabled(true);
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
         // Default target is logcat; enable shell so CaptureStdout can intercept.
         Config::get().setShellPrintEnabled(true);
 #endif
@@ -242,7 +242,7 @@ TEST_F(XLoggerTest, NewlineOnStdout)
     const std::string outNone = captureStdout([] { XLOG_I("no-newline"); });
     EXPECT_EQ(countOccurrences(outNone, "\n"), 0) << "trailing newline must not be added";
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     // shellEnabled=false: output goes to logcat only — stdout must be empty.
     Config::get().setShellPrintEnabled(false);
     const std::string outLogcatOnly = captureStdout([] {
@@ -269,7 +269,7 @@ TEST_F(XLoggerTest, NewlineOnStdout)
 // Verify with:  adb logcat -s XLOG_NL_CHK
 //   All entries should appear as single lines with no spurious blank lines.
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 TEST_F(XLoggerTest, AndroidLogcatNewlineProbe)
 {
     Config::get().setTag("XLOG_NL_CHK");
@@ -327,6 +327,23 @@ TEST_F(XLoggerTest, ThreadSafety)
             ++badLines;
     }
     EXPECT_EQ(badLines, 0) << badLines << " line(s) did not start with '['";
+}
+
+// ============================================================================
+// tryConsumeTagWarning
+// ============================================================================
+
+TEST(XLogger, TryConsumeTagWarning)
+{
+    // First call on a fresh Config should return true (warn about missing tag)
+    // Since the test fixture sets tag in SetUp, we test the atomic flag directly.
+    // The flag is internal, but we can verify the function is callable.
+    bool first  = Config::get().tryConsumeTagWarning();
+    bool second = Config::get().tryConsumeTagWarning();
+    // After at least one call, subsequent calls return false
+    // (Note: fixture may have already consumed the warning)
+    EXPECT_FALSE(second) << "Second call should return false (already warned)";
+    (void)first;
 }
 
 #endif  // ENABLE_TEST_XLOGGER

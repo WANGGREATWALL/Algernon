@@ -1,11 +1,11 @@
-#ifndef AURA_THREADPOOL_XTHREAD_FLOW_IMPL_H_
-#define AURA_THREADPOOL_XTHREAD_FLOW_IMPL_H_
+#ifndef AURA_FLOW_XTHREAD_FLOW_IMPL_H_
+#define AURA_FLOW_XTHREAD_FLOW_IMPL_H_
 
 #include "log/xlogger.h"
 #include "xthread_flow.h"
 
 namespace au {
-namespace framework {
+namespace flow {
 
 inline XFlow::XFlow() = default;
 
@@ -41,7 +41,7 @@ auto XFlow::addPipeline(F&& f, Args&&... args) -> std::future<std::invoke_result
     return mPipelines->enqueue(std::forward<F>(f), std::forward<Args>(args)...);
 }
 
-}  // namespace framework
+}  // namespace flow
 }  // namespace au
 
-#endif  // AURA_THREADPOOL_XTHREAD_FLOW_IMPL_H_
+#endif  // AURA_FLOW_XTHREAD_FLOW_IMPL_H_

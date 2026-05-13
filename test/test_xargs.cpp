@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XARGS
+
 #include "gtest/gtest.h"
 #include "util/xargs.h"
 
@@ -60,3 +62,5 @@ TEST(XArgs, FailHandler) {
     XArgs parser([](char, const std::string&, XArgs::Value&) { return false; });
     EXPECT_FALSE(parser.parse(ARRAY_SIZE(argv), argv));
 }
+
+#endif  // ENABLE_TEST_XARGS

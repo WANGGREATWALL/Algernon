@@ -5,7 +5,7 @@
 #include <cstring>
 #include <mutex>
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 #include <android/log.h>
 #endif
 
@@ -52,7 +52,7 @@ inline const char* levelColor(Level level) noexcept
     // clang-format on
 }
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 inline int toAndroidPriority(Level level) noexcept
 {
     // clang-format off
@@ -106,7 +106,7 @@ inline void logPrint(Level level, const char* file, int line, const char* fmt, v
 
     const bool needFlush = (level >= Level::Warn);
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     const int  prio         = toAndroidPriority(level);
     const bool shellEnabled = Config::get().isShellPrintEnabled();
 
@@ -125,7 +125,7 @@ inline void logPrint(Level level, const char* file, int line, const char* fmt, v
     FmtResult r;
     formatOutBuf(r, Config::get().getTag(), level, Config::get().isColorEnabled(), file, line, fmt, args);
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     __android_log_write(prio, Config::get().getTag(), r.buf + r.hdrLen);
 #endif
 

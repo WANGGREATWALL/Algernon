@@ -1,3 +1,5 @@
+#if ENABLE_TEST_XTRACER2
+
 #include "perf/xtracer2.h"
 #include <gtest/gtest.h>
 #include <functional>
@@ -82,9 +84,11 @@ TEST(XTracer2Test, TracerSubTransitions) {
     {
         XTracer2Scoped t(&ctx, "Root");
         t.sub("Phase1");
-        t.sub(); // Explicit close
-        t.sub(); // Duplicate close shouldn't crash
+        t.sub();
+        t.sub();
         t.sub("Phase2");
     }
     SUCCEED();
 }
+
+#endif  // ENABLE_TEST_XTRACER2
