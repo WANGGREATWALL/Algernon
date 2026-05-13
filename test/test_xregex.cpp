@@ -53,4 +53,56 @@ TEST(XRegex, Split) {
     EXPECT_EQ(parts[3], "c");
 }
 
+// ============================================================================
+// Edge cases
+// ============================================================================
+
+TEST(XRegex, EmptyInput) {
+    EXPECT_TRUE(match("", ".*"));
+    EXPECT_TRUE(fullMatch("", ".*"));
+    auto matches = getAllMatches("", R"(\w+)");
+    EXPECT_TRUE(matches.empty());
+}
+
+TEST(XRegex, NoMatchReturnsEmpty) {
+    EXPECT_EQ(getFirstMatch("abc", R"(\d+)"), "");
+    EXPECT_EQ(getLastMatch("abc", R"(\d+)"), "");
+    EXPECT_TRUE(getAllMatches("abc", R"(\d+)").empty());
+    auto groups = extractGroups("abc", R"((\d+))");
+    EXPECT_TRUE(groups.empty());
+}
+
+TEST(XRegex, ReplaceAllNoMatchReturnsOriginal) {
+    EXPECT_EQ(replaceAll("hello world", "xyz", "hi"), "hello world");
+}
+
+TEST(XRegex, SplitLeadingTrailingDelimiter) {
+    auto parts = split(",a,b", ",");
+    ASSERT_EQ(parts.size(), 3u);
+    EXPECT_EQ(parts[0], "");
+    EXPECT_EQ(parts[1], "a");
+    EXPECT_EQ(parts[2], "b");
+
+    // Trailing empty tokens are skipped by std::regex_token_iterator
+    auto parts2 = split("a,b,", ",");
+    ASSERT_EQ(parts2.size(), 2u);
+    EXPECT_EQ(parts2[0], "a");
+    EXPECT_EQ(parts2[1], "b");
+}
+
+TEST(XRegex, InvalidRegexThrows) {
+    EXPECT_THROW(match("abc", R"([)"), std::regex_error);
+}
+
+TEST(XRegex, ReplaceNthOutOfRange) {
+    EXPECT_EQ(replaceNth("aa bb aa", "aa", "cc", 999), "aa bb aa");
+    EXPECT_EQ(replaceNth("aa bb aa", "aa", "cc", 0), "cc bb aa");
+}
+
+TEST(XRegex, ExtractGroupsSingleGroup) {
+    auto groups = extractGroups("2026!", R"((\d{4})!)");
+    ASSERT_EQ(groups.size(), 1u);
+    EXPECT_EQ(groups[0], "2026");
+}
+
 #endif  // ENABLE_TEST_XREGEX

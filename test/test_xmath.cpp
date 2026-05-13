@@ -65,4 +65,86 @@ TEST(XMath, Trig) {
     EXPECT_NEAR(rad2deg(kPi), 180.0, kEpsilonD);
 }
 
+// ============================================================================
+// Additional constants
+// ============================================================================
+
+TEST(XMath, MoreConstants) {
+    EXPECT_DOUBLE_EQ(kTwoPi, 2.0 * kPi);
+    EXPECT_DOUBLE_EQ(kHalfPi, kPi / 2.0);
+    EXPECT_DOUBLE_EQ(kEpsilonD, 1e-12);
+}
+
+// ============================================================================
+// abs
+// ============================================================================
+
+TEST(XMath, Abs) {
+    EXPECT_EQ(abs(5), 5);
+    EXPECT_EQ(abs(0), 0);
+    EXPECT_EQ(abs(-7), 7);
+    EXPECT_EQ(abs(-1.5f), 1.5f);
+    EXPECT_EQ(abs(-3.14), 3.14);
+}
+
+// ============================================================================
+// clamp edge cases
+// ============================================================================
+
+TEST(XMath, ClampEdgeCases) {
+    EXPECT_EQ(clampToU8(0), 0);
+    EXPECT_EQ(clampToU8(255), 255);
+    EXPECT_EQ(clampToU16(0), 0);
+    EXPECT_EQ(clampToU16(65535), 65535);
+    EXPECT_EQ(clampToU16(-1), 0);
+}
+
+// ============================================================================
+// power / sqrt
+// ============================================================================
+
+TEST(XMath, Power) {
+    EXPECT_FLOAT_EQ(powF(2.0f, 3.0f), 8.0f);
+    EXPECT_DOUBLE_EQ(powD(2.0, 10.0), 1024.0);
+    EXPECT_DOUBLE_EQ(powD(3.0, 0.0), 1.0);
+}
+
+TEST(XMath, Sqrt) {
+    EXPECT_FLOAT_EQ(sqrtF(16.0f), 4.0f);
+    EXPECT_DOUBLE_EQ(sqrtD(2.0), 1.4142135623730951);
+    EXPECT_DOUBLE_EQ(sqrtD(0.0), 0.0);
+}
+
+// ============================================================================
+// Full trig coverage
+// ============================================================================
+
+TEST(XMath, TrigFullCoverage) {
+    EXPECT_NEAR(sinD(0.0), 0.0, kEpsilonD);
+    EXPECT_NEAR(cosF(0.0f), 1.0f, kEpsilonF);
+    EXPECT_NEAR(tanF(0.0f), 0.0f, kEpsilonF);
+    EXPECT_DOUBLE_EQ(tanD(0.0), 0.0);
+
+    EXPECT_NEAR(asinF(0.0f), 0.0f, kEpsilonF);
+    EXPECT_DOUBLE_EQ(asinD(0.0), 0.0);
+    EXPECT_NEAR(acosF(1.0f), 0.0f, kEpsilonF);
+    EXPECT_DOUBLE_EQ(acosD(1.0), 0.0);
+    EXPECT_NEAR(atanF(0.0f), 0.0f, kEpsilonF);
+    EXPECT_DOUBLE_EQ(atanD(0.0), 0.0);
+
+    EXPECT_NEAR(atan2F(0.0f, 1.0f), 0.0f, kEpsilonF);
+    EXPECT_DOUBLE_EQ(atan2D(0.0, 1.0), 0.0);
+}
+
+// ============================================================================
+// angle conversion edge cases
+// ============================================================================
+
+TEST(XMath, AngleConversionEdgeCases) {
+    EXPECT_DOUBLE_EQ(deg2rad(0.0), 0.0);
+    EXPECT_DOUBLE_EQ(deg2rad(-180.0), -kPi);
+    EXPECT_DOUBLE_EQ(rad2deg(0.0), 0.0);
+    EXPECT_DOUBLE_EQ(rad2deg(-kPi), -180.0);
+}
+
 #endif  // ENABLE_TEST_XMATH

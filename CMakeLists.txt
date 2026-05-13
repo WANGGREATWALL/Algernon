@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 # Version (update here; triggers re-configure)
 # ============================================================================
 set(AURA_VERSION_MAJOR 1)
-set(AURA_VERSION_MINOR 2)
+set(AURA_VERSION_MINOR 3)
 set(AURA_VERSION_PATCH 0)
 set(AURA_VERSION "${AURA_VERSION_MAJOR}.${AURA_VERSION_MINOR}.${AURA_VERSION_PATCH}")
 
@@ -27,16 +27,6 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/inc/version.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/inc/version.h
     @ONLY
-)
-
-# ============================================================================
-# Include directories
-# ============================================================================
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    ${CMAKE_CURRENT_BINARY_DIR}/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON
 )
 
 # ============================================================================
@@ -74,6 +64,9 @@ add_library(aura STATIC ${AURA_SOURCES})
 target_include_directories(aura PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/inc
     ${CMAKE_CURRENT_BINARY_DIR}/inc
+)
+target_include_directories(aura PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON
 )
 
@@ -98,6 +91,11 @@ option(ENABLE_TEST_XTRACER3  "Enable xtracer3 unit test"  ON)
 option(ENABLE_TEST_XTIMER4   "Enable xtimer4 unit test"   ON)
 option(ENABLE_TEST_XTRACER4  "Enable xtracer4 unit test"  ON)
 option(ENABLE_TEST_XPLATFORM "Enable xplatform unit test" ON)
+option(ENABLE_TEST_XERROR    "Enable xerror unit test"    ON)
+option(ENABLE_TEST_XFILE     "Enable xfile unit test"     ON)
+option(ENABLE_TEST_XIMAGE    "Enable ximage unit test"    OFF)
+option(ENABLE_TEST_XTRACER   "Enable xtracer unit test"   ON)
+option(ENABLE_TEST_XFLOW     "Enable xflow unit test"     OFF)
 
 # ============================================================================
 # Tests
@@ -144,11 +142,19 @@ aura_add_test(xtracer3)
 aura_add_test(xtimer4)
 aura_add_test(xtracer4)
 aura_add_test(xplatform)
+aura_add_test(xerror)
+aura_add_test(xfile)
+aura_add_test(ximage)
+aura_add_test(xtracer)
+aura_add_test(xflow)
 
 add_executable(aura_test ${AURA_TEST_SOURCES})
 target_compile_definitions(aura_test PRIVATE ${AURA_TEST_DEFINITIONS})
 
 target_include_directories(aura_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    ${CMAKE_CURRENT_BINARY_DIR}/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest/include
 )

@@ -1,12 +1,12 @@
-#ifndef AURA_THREADPOOL_XTHREAD_FLOW_H_
-#define AURA_THREADPOOL_XTHREAD_FLOW_H_
+#ifndef AURA_FLOW_XTHREAD_FLOW_H_
+#define AURA_FLOW_XTHREAD_FLOW_H_
 
 /**
  * @file xthread_flow.h
  * @brief Parallel execution flow: tiled task parallelism and pipeline execution.
  *
  * @example
- *   auto& flow = au::framework::XFlow::get();
+ *   auto& flow = au::flow::XFlow::get();
  *   flow.init(4, 2);  // 4 workers, 2 pipelines
  *
  *   // Parallel tiled loop
@@ -18,7 +18,7 @@
 #include "xthreadpool.h"
 #include <memory>
 
-namespace au { namespace framework {
+namespace au { namespace flow {
 
 class XFlow {
 public:
@@ -47,8 +47,8 @@ private:
     std::unique_ptr<XThreadpool> mPipelines;
 };
 
-}}  // namespace au::framework
+}}  // namespace au::flow
 
 #include "xthread_flow.impl.h"
 
-#endif // AURA_THREADPOOL_XTHREAD_FLOW_H_
+#endif // AURA_FLOW_XTHREAD_FLOW_H_

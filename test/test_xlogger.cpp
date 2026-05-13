@@ -329,4 +329,21 @@ TEST_F(XLoggerTest, ThreadSafety)
     EXPECT_EQ(badLines, 0) << badLines << " line(s) did not start with '['";
 }
 
+// ============================================================================
+// tryConsumeTagWarning
+// ============================================================================
+
+TEST(XLogger, TryConsumeTagWarning)
+{
+    // First call on a fresh Config should return true (warn about missing tag)
+    // Since the test fixture sets tag in SetUp, we test the atomic flag directly.
+    // The flag is internal, but we can verify the function is callable.
+    bool first  = Config::get().tryConsumeTagWarning();
+    bool second = Config::get().tryConsumeTagWarning();
+    // After at least one call, subsequent calls return false
+    // (Note: fixture may have already consumed the warning)
+    EXPECT_FALSE(second) << "Second call should return false (already warned)";
+    (void)first;
+}
+
 #endif  // ENABLE_TEST_XLOGGER

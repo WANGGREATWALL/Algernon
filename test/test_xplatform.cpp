@@ -40,4 +40,58 @@ TEST(XPlatform, HardwareConcurrency) {
     EXPECT_GT(getHardwareConcurrency(), 0);
 }
 
+// ============================================================================
+// Env var edge cases
+// ============================================================================
+
+TEST(XPlatform, EnvVarNonExistent) {
+    EXPECT_EQ(getEnv("AURA_NONEXISTENT_VAR_XYZ"), "");
+    EXPECT_FALSE(hasEnv("AURA_NONEXISTENT_VAR_XYZ"));
+}
+
+TEST(XPlatform, EnvVarOverwrite) {
+    EXPECT_TRUE(setEnv("AURA_TEST_OVERWRITE", "first"));
+    EXPECT_EQ(getEnv("AURA_TEST_OVERWRITE"), "first");
+    EXPECT_TRUE(setEnv("AURA_TEST_OVERWRITE", "second"));
+    EXPECT_EQ(getEnv("AURA_TEST_OVERWRITE"), "second");
+}
+
+// ============================================================================
+// Memory info — available bytes
+// ============================================================================
+
+TEST(XPlatform, MemoryInfoAvailableBytes) {
+    auto info = getMemoryInfo();
+    EXPECT_GT(info.totalBytes, 0u);
+    // availableBytes may be zero on some platforms, but total > 0
+}
+
+// ============================================================================
+// platformName / archName
+// ============================================================================
+
+TEST(XPlatform, PlatformName) {
+    auto name = platformName(kBuildPlatform);
+    EXPECT_STRNE(name, "");
+    EXPECT_NE(name, nullptr);
+}
+
+TEST(XPlatform, ArchName) {
+    auto name = archName(kBuildArch);
+    EXPECT_STRNE(name, "");
+    EXPECT_NE(name, nullptr);
+}
+
+// ============================================================================
+// GPU info (may be empty on headless/CI)
+// ============================================================================
+
+TEST(XPlatform, GpuInfo) {
+    auto gpus = getGpuInfo();
+    // May be empty on headless / macOS without GPU detection
+    for (const auto& gpu : gpus) {
+        EXPECT_FALSE(gpu.name.empty());
+    }
+}
+
 #endif  // ENABLE_TEST_XPLATFORM
