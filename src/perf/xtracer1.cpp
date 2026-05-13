@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 #include <fcntl.h>
 #include <unistd.h>
 #endif
@@ -12,7 +12,7 @@ namespace au::perf {
 
 namespace {
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 
 /// Lazily-opened process-wide trace_marker fd. C++11 static init is
 /// thread-safe. The fd is intentionally never closed — the kernel reclaims
@@ -54,7 +54,7 @@ static void writeTraceMarker(char mode, int pid, const char* name, size_t nameLe
     }
 }
 
-#endif  // AURA_OS_ANDROID
+#endif  // AU_OS_ANDROID
 
 }  // namespace
 
@@ -72,7 +72,7 @@ XTracer1Scoped::XTracer1Scoped(XPerfContext1& cfg, std::string_view name, int32_
 
 void XTracer1Scoped::begin(std::string_view name, int32_t level) noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (mCfg == nullptr || !mCfg->isEnabled() || level > mCfg->getTracerLevel()) {
         return;
     }
@@ -91,7 +91,7 @@ void XTracer1Scoped::begin(std::string_view name, int32_t level) noexcept
 
 XTracer1Scoped::~XTracer1Scoped() noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (!mActive) {
         return;
     }
@@ -106,7 +106,7 @@ XTracer1Scoped::~XTracer1Scoped() noexcept
 
 void XTracer1Scoped::sub(std::string_view name) noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (!mActive) {
         return;
     }
@@ -132,7 +132,7 @@ void XTracer1Scoped::sub(std::string_view name) noexcept
 
 void XTracer1Scoped::sub() noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (!mActive || !mSubOpen) {
         return;
     }

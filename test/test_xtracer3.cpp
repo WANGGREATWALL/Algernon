@@ -9,7 +9,7 @@
 #include "perf/xtracer3.h"
 #include "sys/xplatform.h"
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 #include <fcntl.h>
 #include <unistd.h>
 #endif

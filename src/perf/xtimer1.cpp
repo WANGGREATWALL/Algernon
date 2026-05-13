@@ -16,7 +16,7 @@
 #include "log/xlogger.h"
 #include "sys/xplatform.h"
 
-#if AURA_OS_WINDOWS
+#if AU_OS_WINDOWS
 #include <windows.h>
 #else
 #include <time.h>
@@ -404,7 +404,7 @@ std::string XTimer1::getTimeFormatted(std::string_view fmt) noexcept
     const auto t   = system_clock::to_time_t(now);
 
     std::tm tm{};
-#if AURA_OS_WINDOWS
+#if AU_OS_WINDOWS
     if (localtime_s(&tm, &t) != 0) {
         return {};
     }

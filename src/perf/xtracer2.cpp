@@ -2,7 +2,7 @@
 
 #include "sys/xplatform.h"
 
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -27,7 +27,7 @@ public:
 
     void writeBegin(const char* name)
     {
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
         if (mFd < 0)
             return;
         char buf[256];
@@ -42,7 +42,7 @@ public:
 
     void writeEnd(const char* name)
     {
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
         if (mFd < 0)
             return;
         char buf[256];
@@ -58,7 +58,7 @@ public:
 private:
     TracerMarker()
     {
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
         mFd = open("/sys/kernel/tracing/trace_marker", O_WRONLY | O_CLOEXEC);
         if (mFd == -1) {
             mFd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY | O_CLOEXEC);
@@ -69,14 +69,14 @@ private:
 
     ~TracerMarker()
     {
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
         if (mFd >= 0) {
             close(mFd);
         }
 #endif
     }
 
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
     int mFd  = -1;
     int mPid = 0;
 #endif

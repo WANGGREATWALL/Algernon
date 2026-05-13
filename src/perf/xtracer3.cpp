@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 #include <fcntl.h>
 #include <unistd.h>
 #endif
@@ -12,7 +12,7 @@ namespace au::perf {
 
 namespace {
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
 static int getTraceFd() noexcept
 {
     static int fd = []() {
@@ -65,7 +65,7 @@ XTracer3Scoped::XTracer3Scoped(XPerfContext3& cfg, std::string_view name, int32_
 
 void XTracer3Scoped::begin(std::string_view name, int32_t level) noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (mCfg == nullptr || !mCfg->isEnabled() || level > mCfg->getTracerLevel()) {
         return;
     }
@@ -84,7 +84,7 @@ void XTracer3Scoped::begin(std::string_view name, int32_t level) noexcept
 
 XTracer3Scoped::~XTracer3Scoped() noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (!mActive) {
         return;
     }
@@ -99,7 +99,7 @@ XTracer3Scoped::~XTracer3Scoped() noexcept
 
 void XTracer3Scoped::sub(std::string_view name) noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (!mActive) {
         return;
     }
@@ -117,7 +117,7 @@ void XTracer3Scoped::sub(std::string_view name) noexcept
 
 void XTracer3Scoped::sub() noexcept
 {
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     if (!mActive || !mSubOpen) {
         return;
     }

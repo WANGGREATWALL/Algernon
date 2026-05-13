@@ -243,7 +243,7 @@ std::string XTimer0::getTimeFormatted(const std::string& fmt)
     std::time_t t   = std::chrono::system_clock::to_time_t(now);
     char        buf[128];
 
-#ifdef AURA_OS_WINDOWS
+#ifdef AU_OS_WINDOWS
     std::tm tmBuf;
     localtime_s(&tmBuf, &t);
     std::strftime(buf, sizeof(buf), fmt.c_str(), &tmBuf);

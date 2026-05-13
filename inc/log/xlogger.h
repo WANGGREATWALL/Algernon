@@ -78,7 +78,7 @@ public:
     void setColorEnabled(bool on) noexcept { mColorEnabled.store(on, std::memory_order_relaxed); }
     bool isColorEnabled() const noexcept { return mColorEnabled.load(std::memory_order_relaxed); }
 
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     void setShellPrintEnabled(bool on) noexcept { mShellPrint.store(on, std::memory_order_relaxed); }
 
     bool isShellPrintEnabled() const noexcept { return mShellPrint.load(std::memory_order_relaxed); }
@@ -91,7 +91,7 @@ private:
 
     std::atomic<Level> mLevel{Level::Info};
     std::atomic<bool>  mColorEnabled{true};
-#if AURA_OS_ANDROID
+#if AU_OS_ANDROID
     std::atomic<bool> mShellPrint{false};
 #endif
 };

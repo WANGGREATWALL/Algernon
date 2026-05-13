@@ -5,7 +5,7 @@
 #include "log/xlogger.h"
 #include "sys/xplatform.h"
 
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
 #include <fcntl.h>
 #include <unistd.h>
 #endif
@@ -22,7 +22,7 @@ XTracer0Context::XTracer0Context()
     , mLevel(-1)
     , mFdTrace(-1)
 {
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
     int fd = ::open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
     if (fd == -1)
         fd = ::open("/sys/kernel/tracing/trace_marker", O_WRONLY);
@@ -91,7 +91,7 @@ enum TraceMode { kBegin = 0, kEnd };
 void writeTraceMarker([[maybe_unused]] int fd, [[maybe_unused]] const char* name,
                       [[maybe_unused]] TraceMode mode) noexcept
 {
-#ifdef AURA_OS_ANDROID
+#ifdef AU_OS_ANDROID
     if (fd < 0 || !name)
         return;
     char    buf[256];
