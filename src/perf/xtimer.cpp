@@ -64,9 +64,11 @@ public:
     ~TimerTree()
     {
         joinLevelTo(0);
-        mRoot.reset();
-        showByDFS(mRoot);
-        mRoot.mNodes.clear();
+        if (!mRoot.mNodes.empty()) {
+            mRoot.reset();
+            showByDFS(mRoot);
+            mRoot.mNodes.clear();
+        }
     }
 
     void setName(const std::string& name) { mRoot.mName = name; }
@@ -93,6 +95,14 @@ public:
         size_t cur = mLevel;
         for (size_t i = level; i < cur; ++i)
             resetActive();
+
+        if (level == 0 && !mRoot.mNodes.empty()) {
+            mRoot.reset();
+            showByDFS(mRoot);
+            mRoot.mNodes.clear();
+            mRoot.mTimer.restart();
+            mRoot.mDuration = 0.0f;
+        }
     }
 
 private:
@@ -101,7 +111,7 @@ private:
 
     void showByDFS(const TimerNode& node)
     {
-        std::printf("%s%s: %.2f ms\n", nodePrefix(node).c_str(), node.mName.c_str(), node.mDuration);
+        XLOG_I("%s%s: %.2f ms\n", nodePrefix(node).c_str(), node.mName.c_str(), node.mDuration);
         for (auto& n : node.mNodes)
             showByDFS(n);
     }

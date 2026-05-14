@@ -4,8 +4,6 @@
 #include <chrono>
 #include <string>
 
-#include "sys/xplatform.h"
-
 namespace au {
 namespace perf {
 

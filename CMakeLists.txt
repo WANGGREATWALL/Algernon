@@ -155,6 +155,7 @@ target_include_directories(aura_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/inc
     ${CMAKE_CURRENT_BINARY_DIR}/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/test
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gtest/include
 )
@@ -168,4 +169,27 @@ if(UNIX AND NOT APPLE)
 endif()
 if(APPLE)
     target_link_libraries(aura PRIVATE dl)
+endif()
+
+# ---------------------------------------------------------------------------
+# Sanitizer options for aura_test
+# ---------------------------------------------------------------------------
+
+option(ENABLE_ASAN "Enable AddressSanitizer for aura_test" OFF)
+option(ENABLE_TSAN "Enable ThreadSanitizer for aura_test" OFF)
+
+if(ENABLE_ASAN AND ENABLE_TSAN)
+    message(FATAL_ERROR "ENABLE_ASAN and ENABLE_TSAN are mutually exclusive")
+endif()
+
+if(ENABLE_ASAN)
+    target_compile_options(aura_test PRIVATE -fsanitize=address -fno-omit-frame-pointer -g)
+    target_link_options(aura_test PRIVATE -fsanitize=address)
+    message(STATUS "AddressSanitizer enabled for aura_test")
+endif()
+
+if(ENABLE_TSAN)
+    target_compile_options(aura_test PRIVATE -fsanitize=thread -fno-omit-frame-pointer -g)
+    target_link_options(aura_test PRIVATE -fsanitize=thread)
+    message(STATUS "ThreadSanitizer enabled for aura_test")
 endif()
